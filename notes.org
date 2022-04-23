@@ -1,0 +1,47 @@
+#+title: Notes
+
+* Altonomy assessment
+
+Just some notes to myself while exploring/deciding what to do
+
+* Things to figure out
+
+How to make my backend system like Flask run in bg to poll live data?
+Considering to use go instead
+
+* USDC/ETH pool
+
+On uniswap, the pool is, https://info.uniswap.org/#/pools/0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640
+0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 is the contract address.
+0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640 is the address.
+
+* Getting data from etherscan
+
+To get data from etherscan, there is a doc, https://docs.etherscan.io/api-endpoints/accounts#get-a-list-of-erc20-token-transfer-events-by-address
+https://api.etherscan.io/api
+   ?module=account
+   &action=tokentx
+   &contractaddress=0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2
+   &address=0x4e83362442b8d1bec281594cea3050c8eb01311c
+   &page=1
+   &offset=100
+   &startblock=0
+   &endblock=27025780
+   &sort=asc
+   &apikey=YourApiKeyToken
+
+* Getting USDT/ETH
+
+   https://api.binance.com/api/v3/depth?symbol=ETHUSDT&limit=1
+
+* timestamp in response
+
+The timestamp is unix timestamp, use this to convert https://unixtime.org/
+
+* Computing transaction fee
+
+https://ethereum.stackexchange.com/questions/82315/etherscan-api-how-to-get-transaction-fee
+
+To get the transaction fee, use gas_price multiply by gas_used and divide
+
+fee (WEI) = gas_price x gas_used
