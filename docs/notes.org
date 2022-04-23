@@ -45,3 +45,19 @@ https://ethereum.stackexchange.com/questions/82315/etherscan-api-how-to-get-tran
 To get the transaction fee, use gas_price multiply by gas_used and divide
 
 fee (WEI) = gas_price x gas_used
+
+* System designs
+
+This are just some of my thoughts at the moment, I was initially thinking of using Python + Flask to build the whole thing, but I guess I was too fixated on the, how do
+I run the polling in the background while running flask at the same time. Do I write a seperate scripts to poll it into a db of sorts and let the flask access it that way?
+
+Then I also thought about including the polling into the server, which can be run seperately (maybe via celery or some sort of bg task thing) which I admit I am not too
+familiar with. I might revisit this if I have time left.
+
+Also at the same time, I thought of making use of Go because of it's goroutine, I thought it makes sense for doing this kind of task. Also as I explored, the api to get
+the transaction from etherscan and prices from Binance was not too difficulty, I suppose I can skip using libraries, I will discuss my decisions of not using libraries.
+
+* External libraries
+
+I have given this some thoughts as well, I want to make use of libraries if I can, but for this assignment, I thought to not use too many dependecies and keep it as simple
+as possible since the task is relatively easy achievable in (Go), let's see.
