@@ -30,6 +30,8 @@ https://api.etherscan.io/api
    &sort=asc
    &apikey=YourApiKeyToken
 
+Problem: How to get data given a time period? This would be needed for the batch fetch api
+
 * Getting USDT/ETH
 
    https://api.binance.com/api/v3/depth?symbol=ETHUSDT&limit=1

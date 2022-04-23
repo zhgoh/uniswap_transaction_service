@@ -41,6 +41,9 @@ type EtherscanClient struct {
 	apiKey string
 }
 
+//func (client *EtherscanClient) fetchDatedTransactions() ([]EtherscanTransaction, error) {
+//}
+
 func (client *EtherscanClient) fetchTransactions() ([]EtherscanTransaction, error) {
 	queries := map[string]string{
 		"action":          "tokentx",
@@ -49,9 +52,9 @@ func (client *EtherscanClient) fetchTransactions() ([]EtherscanTransaction, erro
 		"address":         "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
 		"page":            "1",
 		"offset":          "100",
-		"startblock":      "0",
-		"endblock":        "27025780",
-		"sort":            "asc",
+		"sort":            "desc",
+		//"startblock":      "0",
+		//"endblock":        "0",
 	}
 	url := fmt.Sprintf("https://api.etherscan.io/api?apikey=%s", client.apiKey)
 	for k, v := range queries {
@@ -85,6 +88,7 @@ func (client *EtherscanClient) fetchTransactions() ([]EtherscanTransaction, erro
 	}
 
 	log.Print("Successfully get transactions")
+	log.Printf("Got %d entries", len(etherScan.Result))
 	return etherScan.Result, nil
 }
 

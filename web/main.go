@@ -1,10 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	_ "modernc.org/sqlite"
 	"net/http"
 	"time"
 )
@@ -40,13 +42,17 @@ var Transactions []Transaction
 func main() {
 	log.Println("Transactions service.")
 	// TODO: Have a goroutine running in the background to poll live data
-	go pollTransactions()
+	db, err := sql.Open("sqlite", "./test.sqlite")
+	if err != nil {
+		log.Print("Error: opening SQLite db.")
 
-	Transactions = []Transaction{
-		{Hash: "0x1", Fee: "10"},
-		{Hash: "0x2", Fee: "10"},
-		{Hash: "0x3", Fee: "10"},
 	}
+	defer db.Close()
+
+	q := make(chan bool)
+	go pollTransactions(q)
+
+	Transactions = []Transaction{}
 
 	// Serve
 	serve("5050")
@@ -149,7 +155,33 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(transactionResp)
 }
 
-func pollTransactions() {
+func pollTransactions(quit chan bool) {
 	log.Print("Polling live transactions.")
-	// etherClient.fetchTransactions()
+	etherClient, err := makeEtherscan()
+	if err != nil {
+		log.Print("Error: did not create etherscan client properly.")
+		return
+	}
+
+	for {
+		select {
+		case <-quit:
+			log.Print("Polling stopped.")
+			return
+		default:
+			log.Print("Checking for transactions.")
+			transactions, err := etherClient.fetchTransactions()
+			if err != nil {
+				// Log error and try again later
+				log.Print("Error: Failed to fetch transaction")
+				log.Print(err)
+			}
+			// Add transactions to db
+			addTransactions(transactions)
+			time.Sleep(60 * time.Second)
+		}
+	}
+}
+
+func addTransactions(transactions []EtherscanTransaction) {
 }
