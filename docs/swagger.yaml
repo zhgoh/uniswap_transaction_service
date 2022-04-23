@@ -1,0 +1,114 @@
+swagger: "2.0"
+info:
+  description: "This is a simple web backend service that supports getting transactions"
+  version: "1.0.0"
+  title: "Transactions fetcher"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "zihe.goh@gmail.com"
+  license:
+    name: "MIT"
+    url: "https://mit-license.org/"
+host: "localhost:5050"
+basePath: "/"
+tags:
+- name: "transaction"
+  description: "Get transactions related info"
+- name: "batch"
+  description: "Start fetching batch jobs"
+schemes:
+- "https"
+- "http"
+paths:
+  /transaction:
+    get:
+      tags:
+      - "transaction"
+      summary: "Get transaction info given a hash"
+      description: ""
+      operationId: "getTransaction"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Transaction hash"
+        required: true
+        schema:
+          $ref: "#/definitions/TransactionRequest"
+      responses:
+        "200":
+          description: "Transaction hash"
+          schema:
+            $ref: "#/definitions/TransactionResponse"
+        "405":
+          description: "Invalid input"
+  /batch:
+    put:
+      tags:
+      - "batch"
+      summary: "Start a batch job"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Transaction hash"
+        required: true
+        schema:
+          $ref: "#/definitions/BatchRequest"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/BatchResponse"
+        "405":
+          description: "Invalid input"
+definitions:
+  TransactionRequest:
+    type: "object"
+    properties:
+      hash:
+        type: "string"
+        description: "Transaction Request"
+  TransactionResponse:
+    type: "object"
+    properties:
+      error:
+        type: "integer"
+        format: "int32"
+      transactions:
+        type: "object"
+        properties:
+          hash:
+              type: "string"
+              description: "Hash value of transaction"
+          fee:
+              type: "integer"
+              format: "int32"
+      message:
+        type: "string"
+        description: "Message if any"
+  BatchRequest:
+    type: "object"
+    properties:
+      start:
+        type: "string"
+        format: "date-time"
+      end:
+        type: "string"
+        format: "date-time"
+  BatchResponse:
+    type: "object"
+    properties:
+      error:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+        description: "Message if any"
