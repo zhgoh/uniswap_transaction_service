@@ -4,11 +4,11 @@ all:
 	@echo make run
 	@echo make build
 
-run:
-	cd web && go run main.go
+run: build
+	cls && .\web\main.exe
 
 build:
-	cd web && go build main.go
+	cls && cd web && go build main.go
 
 test:
-	cd web && go test
+	cls && cd web && go test
