@@ -31,7 +31,7 @@ type EtherscanTransaction struct {
 	TransactionIndex  string
 	Gas               string
 	GasPrice          string
-	GaseUsed          string
+	GasUsed           string
 	CumulativeGasUsed string
 	Input             string
 	Confirmations     string

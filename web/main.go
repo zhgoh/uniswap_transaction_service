@@ -1,14 +1,15 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	_ "modernc.org/sqlite"
 	"net/http"
+	"strconv"
 	"time"
+	// "database/sql"
+	//_ "modernc.org/sqlite"
 )
 
 type Transaction struct {
@@ -38,21 +39,25 @@ type BatchResponse struct {
 
 // TODO: Store Transactions in DB
 var Transactions []Transaction
+var latestHash string
 
 func main() {
 	log.Println("Transactions service.")
+
 	// TODO: Have a goroutine running in the background to poll live data
-	db, err := sql.Open("sqlite", "./test.sqlite")
-	if err != nil {
-		log.Print("Error: opening SQLite db.")
+	// db, err := sql.Open("sqlite", "./test.sqlite")
+	// if err != nil {
+	// 	log.Print("Error: opening SQLite db.")
 
+	// }
+	// defer db.Close()
+
+	// q := make(chan bool)
+	// go pollTransactions(q)
+
+	Transactions = []Transaction{
+		{Hash: "0x1", Fee: "10"},
 	}
-	defer db.Close()
-
-	q := make(chan bool)
-	go pollTransactions(q)
-
-	Transactions = []Transaction{}
 
 	// Serve
 	serve("5050")
@@ -163,25 +168,54 @@ func pollTransactions(quit chan bool) {
 		return
 	}
 
-	for {
-		select {
-		case <-quit:
-			log.Print("Polling stopped.")
-			return
-		default:
-			log.Print("Checking for transactions.")
-			transactions, err := etherClient.fetchTransactions()
-			if err != nil {
-				// Log error and try again later
-				log.Print("Error: Failed to fetch transaction")
-				log.Print(err)
-			}
-			// Add transactions to db
-			addTransactions(transactions)
-			time.Sleep(60 * time.Second)
+	//for {
+	select {
+	case <-quit:
+		log.Print("Polling stopped.")
+		return
+	default:
+		log.Print("Checking for transactions.")
+		transactions, err := etherClient.fetchTransactions()
+		if err != nil {
+			// Log error and try again later
+			log.Print("Error: Failed to fetch transaction")
+			log.Print(err)
 		}
+		// Add transactions to db
+		addTransactions(transactions)
+		time.Sleep(60 * time.Second)
 	}
+	//}
 }
 
 func addTransactions(transactions []EtherscanTransaction) {
+	for _, v := range transactions {
+		if v.Hash == latestHash {
+			latestHash = transactions[0].Hash
+			break
+		}
+
+		gasPrice, err := strconv.Atoi(v.GasPrice)
+		if err != nil {
+			log.Print("Error: failed to convert gas price to integer.")
+			continue
+		}
+
+		gasUsed, err := strconv.Atoi(v.GasUsed)
+		if err != nil {
+			log.Print("Error: failed to convert gas used to integer.")
+			continue
+		}
+
+		price := float64(gasPrice*gasUsed) / 100000000000000000
+		log.Printf("Hash: %s, Price: %f\n", v.Hash, price)
+
+		//Transactions = append(Transactions, Transaction{Hash: v.Hash, Fee: v.})
+	}
+
+	if len(latestHash) == 0 {
+		latestHash = transactions[0].Hash
+	}
+
+	log.Printf("Latest hash: %s\n", latestHash)
 }
