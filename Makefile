@@ -5,10 +5,11 @@ all:
 	@echo make build
 
 run: build
-	cls && .\web\main.exe
+	cls
+	.\web\main.exe
 
 build:
-	cls && cd web && go build main.go
+	cd web && go build main.go etherscan.go
 
 test:
 	cls && cd web && go test

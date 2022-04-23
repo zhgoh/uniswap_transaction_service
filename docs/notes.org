@@ -57,6 +57,10 @@ familiar with. I might revisit this if I have time left.
 Also at the same time, I thought of making use of Go because of it's goroutine, I thought it makes sense for doing this kind of task. Also as I explored, the api to get
 the transaction from etherscan and prices from Binance was not too difficulty, I suppose I can skip using libraries, I will discuss my decisions of not using libraries.
 
+* Trigger batch jobs
+
+As mentioned earlier, I would be making a http endpoint to start this batch job and decide later if I got time to do file based polling as well
+
 * External libraries
 
 I have given this some thoughts as well, I want to make use of libraries if I can, but for this assignment, I thought to not use too many dependecies and keep it as simple

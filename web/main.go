@@ -6,29 +6,41 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Transaction struct {
-	Hash string
-	Fee  string
+	Hash string `json:"hash"`
+	Fee  string `json:"fee"`
 }
 
 type TransactionRequest struct {
-	Hash string
+	Hash string `json:"hash"`
 }
 
 type TransactionResponse struct {
-	ErrorCode    int
-	Transactions Transaction
-	Message      string
+	ErrorCode    int         `json:"errorcode"`
+	Transactions Transaction `json:"transactions"`
+	Message      string      `json:"message"`
+}
+
+type BatchRequest struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
+}
+
+type BatchResponse struct {
+	ErrorCode int    `json:"errorcode"`
+	Message   string `json:"message"`
 }
 
 // TODO: Store Transactions in DB
 var Transactions []Transaction
 
 func main() {
-	log.Println("Transactions service")
+	log.Println("Transactions service.")
 	// TODO: Have a goroutine running in the background to poll live data
+	go pollTransactions()
 
 	Transactions = []Transaction{
 		{Hash: "0x1", Fee: "10"},
@@ -42,40 +54,70 @@ func main() {
 
 func serve(port string) {
 	// TODO: Provide REST api for the following,
-
-	//myRouter := mux.NewRouter().StrictSlash(true)
-	//myRouter.HandleFunc("/", homePage)
 	http.HandleFunc("/", homePage)
 
 	// TODO: API: batch job
-	// myRouter.HandleFunc("/batch", batch).Methods("POST")
 	http.HandleFunc("/batch", batch)
 
 	// TODO: API: Get transaction fee given transaction hash
-	// myRouter.HandleFunc("/transactions", transaction).Methods("POST")
 	http.HandleFunc("/transactions", transaction)
 
 	// TODO: Bonus API: Decode actual Uniswap swap price
 
 	// Listen to port
-	log.Printf("Running server at port at %s\n", port)
+	log.Printf("Running server at port at %s.\n", port)
 	port = fmt.Sprintf(":%s", port)
-	//log.Fatal(http.ListenAndServe(port, myRouter))
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Endpoints\n")
-	fmt.Fprintf(w, "POST /batch\n")
-	fmt.Fprintf(w, "POST  /transactions\n")
+	fmt.Fprintf(w, "GET  /transactions\n")
+	fmt.Fprintf(w, "PUT  /batch\n")
 }
 
 func batch(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Batch\n")
+	if r.Method != http.MethodPut {
+		w.WriteHeader(404)
+		log.Print("Only PUT method supported on batch.")
+		return
+	}
+
+	batchResp := BatchResponse{
+		ErrorCode: 0,
+		Message:   "Successfully process batch request.",
+	}
+	log.Print("Batch job request")
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Print("Error: Cannot read batch request.")
+		batchResp.ErrorCode = 1
+		batchResp.Message = "Error: cannot read batch request."
+		return
+	}
+
+	var batchReq BatchRequest
+	err = json.Unmarshal(reqBody, &batchReq)
+	if err != nil {
+		log.Print("Error: Cannot unmarshal batch request.")
+		batchResp.ErrorCode = 1
+		batchResp.Message = "Error: cannot unmarshal batch request."
+		return
+	}
+
+	log.Printf("Processing transactions between %s and %s", batchReq.Start, batchReq.End)
+	json.NewEncoder(w).Encode(batchResp)
 }
 
 func transaction(w http.ResponseWriter, r *http.Request) {
-	log.Print("Getting transactions...")
+	if r.Method != http.MethodGet {
+		w.WriteHeader(404)
+		log.Print("Only GET method supported on transactions.")
+		return
+	}
+
+	log.Print("Getting transactions.")
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -98,11 +140,16 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 	// Get the transaction
 	for _, transaction := range Transactions {
 		if transaction.Hash == transactionReq.Hash {
-			transactionResp.Message = "Found transactions"
+			transactionResp.Message = "Found transactions."
 			transactionResp.ErrorCode = 0
 			transactionResp.Transactions = transaction
 			break
 		}
 	}
 	json.NewEncoder(w).Encode(transactionResp)
+}
+
+func pollTransactions() {
+	log.Print("Polling live transactions.")
+	// etherClient.fetchTransactions()
 }
