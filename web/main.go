@@ -35,12 +35,6 @@ type BatchResponse struct {
 	Message   string `json:"message"`
 }
 
-type LiveTransaction struct {
-	hash      string
-	price     float64
-	timeStamp int
-}
-
 // TODO: Store Transactions in DB
 var Transactions []Transaction
 var latestHash string
@@ -74,6 +68,7 @@ func serve(port string) {
 
 	// TODO: API: Get transaction fee given transaction hash
 	http.HandleFunc("/transactions", transaction)
+	http.HandleFunc("/transactions/all", allTransaction)
 
 	// TODO: Bonus API: Decode actual Uniswap swap price
 
@@ -155,6 +150,17 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(transactionResp)
 }
 
+func allTransaction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(404)
+		log.Print("Only GET method supported on transactions.")
+		return
+	}
+
+	log.Print("Getting all transactions.")
+	json.NewEncoder(w).Encode(Transactions)
+}
+
 func pollTransactions(quit chan bool) {
 	log.Print("Polling live transactions.")
 
@@ -224,14 +230,16 @@ func pollTransactions(quit chan bool) {
 //}
 
 func addTransactions(etherTransactions []EtherscanTransaction, prices float64) error {
+	if len(etherTransactions) == 0 {
+		return fmt.Errorf("no transactions provided")
+	}
+
 	for _, v := range etherTransactions {
 		if len(v.Hash) == 0 {
 			return fmt.Errorf("hash is empty.")
 		}
 
 		if v.Hash == latestHash {
-			// Once we reached the last seen hash, we save the first hash as the last loaded transaction
-			latestHash = etherTransactions[0].Hash
 			break
 		}
 
@@ -255,7 +263,9 @@ func addTransactions(etherTransactions []EtherscanTransaction, prices float64) e
 		}
 
 		// Fees in eth
-		fees := float64(gasPrice*gasUsed) / 100000000000000000
+		// Note: no idea if division or multiplying would be faster here, probably same
+		// fees := float64(gasPrice*gasUsed) / 1000000000000000000
+		fees := float64(gasPrice*gasUsed) * 0.000000000000000001
 
 		// Convert to price in USDT
 		fees *= prices
@@ -264,5 +274,6 @@ func addTransactions(etherTransactions []EtherscanTransaction, prices float64) e
 		log.Printf("Hash: %s, Time: %d, Fees: $%.2f", v.Hash, timeStamp, fees)
 		Transactions = append(Transactions, Transaction{v.Hash, fees})
 	}
+	latestHash = etherTransactions[0].Hash
 	return nil
 }
