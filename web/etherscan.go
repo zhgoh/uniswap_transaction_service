@@ -56,12 +56,12 @@ func (client *EtherscanClient) fetchTransactions() ([]EtherscanTransaction, erro
 		//"startblock":      "0",
 		//"endblock":        "0",
 	}
-	url := fmt.Sprintf("https://api.etherscan.io/api?apikey=%s", client.apiKey)
+	api := fmt.Sprintf("https://api.etherscan.io/api?apikey=%s", client.apiKey)
 	for k, v := range queries {
-		url = fmt.Sprintf("%s&%s=%s", url, k, v)
+		api = fmt.Sprintf("%s&%s=%s", api, k, v)
 	}
 
-	resp, err := http.Get(url)
+	resp, err := http.Get(api)
 	if err != nil {
 		log.Print("Error: Unable to fetch transactions.")
 		return nil, err

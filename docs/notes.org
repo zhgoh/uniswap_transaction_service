@@ -40,7 +40,7 @@ Problem: How to get data given a time period? This would be needed for the batch
 
 The timestamp is unix timestamp, use this to convert https://unixtime.org/, should work for most timestamp
 
-For Binance, it is using miliseconds, use this instead, https://currentmillis.com/
+For Binance api (/api/v3/klines), it is using miliseconds, use this instead, https://currentmillis.com/
 
 * Computing transaction fee
 

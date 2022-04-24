@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	// "database/sql"
-	//_ "modernc.org/sqlite"
 )
 
 type Transaction struct {
@@ -162,11 +160,15 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 
 func pollTransactions(quit chan bool) {
 	log.Print("Polling live transactions.")
+
 	etherClient, err := makeEtherscan()
 	if err != nil {
 		log.Print("Error: did not create etherscan client properly.")
 		return
 	}
+
+	binanceClient := makeBinanceClient()
+	var latestTime time.Time
 
 	//for {
 	select {
@@ -175,12 +177,17 @@ func pollTransactions(quit chan bool) {
 		return
 	default:
 		log.Print("Checking for transactions.")
+		latestTime = time.Now()
+
 		transactions, err := etherClient.fetchTransactions()
 		if err != nil {
 			// Log error and try again later
 			log.Print("Error: Failed to fetch transaction")
 			log.Print(err)
 		}
+
+		binanceClient.getKlines("ETHUSDT", 1, Days, latestTime.UnixMilli(), 0, 0)
+
 		// Add transactions to db
 		addTransactions(transactions)
 		time.Sleep(60 * time.Second)
@@ -189,6 +196,7 @@ func pollTransactions(quit chan bool) {
 }
 
 func addTransactions(transactions []EtherscanTransaction) {
+	// Look though all fetched transactions and skip the older ones
 	for _, v := range transactions {
 		if v.Hash == latestHash {
 			latestHash = transactions[0].Hash
