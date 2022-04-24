@@ -32,17 +32,16 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - in: "body"
-        name: "body"
+      - name: "hash"
+        in: "query"
         description: "Transaction hash"
         required: true
-        schema:
-          $ref: "#/definitions/TransactionRequest"
+        type: "string"
       responses:
         "200":
           description: "Transaction hash"
           schema:
-            $ref: "#/definitions/TransactionResponse"
+            $ref: "#/definitions/Transaction"
         "405":
           description: "Invalid input"
   /batch:
@@ -70,13 +69,7 @@ paths:
         "405":
           description: "Invalid input"
 definitions:
-  TransactionRequest:
-    type: "object"
-    properties:
-      hash:
-        type: "string"
-        description: "Transaction Request"
-  TransactionResponse:
+  Transaction:
     type: "object"
     properties:
       error:

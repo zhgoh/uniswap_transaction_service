@@ -131,28 +131,21 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Getting transactions.")
-
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Print("Error: Cannot read transactions request.")
-		return
-	}
-
-	var transactionReq TransactionRequest
-	err = json.Unmarshal(reqBody, &transactionReq)
-	if err != nil {
-		log.Print("Error: Cannot unmarshal transactions.")
-		return
-	}
-
 	transactionResp := TransactionResponse{
 		Message:   "No transactions hash found",
 		ErrorCode: 1,
 	}
 
+	hashes, ok := r.URL.Query()["hash"]
+	if !ok || len(hashes[0]) < 1 {
+		log.Print("Error: url param hash is missing.")
+		json.NewEncoder(w).Encode(transactionResp)
+		return
+	}
+
 	// Get the transaction
 	for _, transaction := range Transactions {
-		if transaction.Hash == transactionReq.Hash {
+		if transaction.Hash == hashes[0] {
 			transactionResp.Message = "Found transactions."
 			transactionResp.ErrorCode = 0
 			transactionResp.Transactions = transaction
@@ -183,7 +176,7 @@ func pollTransactions(quit chan bool) {
 			log.Print("Checking for transactions.")
 
 			// Will fetch latest price from order books and used it to store in latest transactions
-			prices, err := binanceClient.getOrderBook("ETHUSDT", 0)
+			prices, err := binanceClient.getOrderBook("ETHUSDT", 1)
 			if err != nil {
 				log.Print("Error: getting prices, will try again later")
 				log.Print(err)

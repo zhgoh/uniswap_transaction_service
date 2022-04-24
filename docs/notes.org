@@ -69,3 +69,36 @@ As mentioned earlier, I would be making a http endpoint to start this batch job 
 
 I have given this some thoughts as well, I want to make use of libraries if I can, but for this assignment, I thought to not use too many dependecies and keep it as simple
 as possible since the task is relatively easy achievable in (Go), let's see.
+
+* Database considerations
+
+I have not thought about the DB I would be using, but I am going to try sqlite.
+
+* Backend REST API
+
+For REST api, I will provide the following,
+
+PUT /batch
+input:
+{
+    "start": "2022-04-23T05:55:10.770Z",
+    "end": "2022-04-23T05:55:10.770Z"
+}
+output:
+{
+    "errorcode": 0,
+    "message": "Successfully process batch request."
+}
+
+GET /transactions
+input:
+hash: string (query)
+output:
+{
+    "errorcode": 1,
+    "transactions": {
+        "hash": "",
+        "fee": ""
+    },
+    "message": "No transactions hash found"
+}
