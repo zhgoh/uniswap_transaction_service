@@ -75,7 +75,7 @@ func PollTransactions(quit chan bool) {
 //	return prices, nil
 //}
 
-func addTransactions(etherTransactions []EtherscanTransaction, prices float64) error {
+func addTransactions(etherTransactions []etherscanTransaction, prices float64) error {
 	if len(etherTransactions) == 0 {
 		return fmt.Errorf("no transactions provided")
 	}
@@ -118,7 +118,7 @@ func addTransactions(etherTransactions []EtherscanTransaction, prices float64) e
 
 		// TODO: Add to DB
 		log.Printf("Hash: %s, Time: %d, Fees: $%.2f", v.Hash, timeStamp, fees)
-		Transactions = append(Transactions, Transaction{v.Hash, fees})
+		transactions = append(transactions, cryptoTransaction{v.Hash, fees})
 	}
 	latestHash = etherTransactions[0].Hash
 	return nil

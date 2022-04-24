@@ -5,7 +5,7 @@ import (
 )
 
 func Test_AddTransaction(t *testing.T) {
-	etherScanTransactions := []EtherscanTransaction{
+	etherScanTransactions := []etherscanTransaction{
 		{
 			Hash:      "0x48888e465a61d4f9908dab1d18d9ab67d8227d72a44f58ecb00750b719df9b9c",
 			GasPrice:  "56741962048",
@@ -31,7 +31,7 @@ func Test_AddTransaction(t *testing.T) {
 		t.Fatal("Error adding transactions")
 	}
 
-	etherScanTransactions = []EtherscanTransaction{
+	etherScanTransactions = []etherscanTransaction{
 		{
 			Hash:      "0xf5bc869730283da55772add53c542ad1cb9d9f8452d20c62fb4141224812cabc",
 			GasPrice:  "44901991519",
@@ -56,7 +56,7 @@ func Test_AddTransaction(t *testing.T) {
 		t.Fatal("Error adding transactions")
 	}
 
-	if len(Transactions) != 5 {
+	if len(transactions) != 5 {
 		t.Fatal("Error when adding transactions. Some entries might be duplicated")
 	}
 }

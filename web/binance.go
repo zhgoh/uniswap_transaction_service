@@ -9,17 +9,17 @@ import (
 	"strconv"
 )
 
-type ChartInterval int64
+type chartInterval int64
 
 const (
-	Minutes ChartInterval = iota
+	Minutes chartInterval = iota
 	Hours
 	Days
 	Weeks
 	Months
 )
 
-func (chart ChartInterval) String() string {
+func (chart chartInterval) String() string {
 	switch chart {
 	case Minutes:
 		return "m"
@@ -37,14 +37,14 @@ func (chart ChartInterval) String() string {
 	return "unknown"
 }
 
-type BinanceClient struct{}
+type binanceClient struct{}
 
-func makeBinanceClient() *BinanceClient {
-	return &BinanceClient{}
+func makeBinanceClient() *binanceClient {
+	return &binanceClient{}
 }
 
 // Representation of the kline response
-type KlineResponse struct {
+type klineResponse struct {
 	OpenTime              int
 	Open                  string
 	High                  string
@@ -60,7 +60,7 @@ type KlineResponse struct {
 }
 
 // Custom unmarshal json to support unmarshalling arrays
-func (k *KlineResponse) UnmarshalJSON(buf []byte) error {
+func (k *klineResponse) UnmarshalJSON(buf []byte) error {
 	tmp := []interface{}{
 		&k.OpenTime,
 		&k.Open,
@@ -86,7 +86,7 @@ func (k *KlineResponse) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
-func (client *BinanceClient) getKlines(symbol string, freq int, interval ChartInterval, startTime, endTime, limit int64) ([]KlineResponse, error) {
+func (client *binanceClient) getKlines(symbol string, freq int, interval chartInterval, startTime, endTime, limit int64) ([]klineResponse, error) {
 	queries := make(map[string]int64)
 	if startTime > 0 {
 		queries["startTime"] = startTime
@@ -116,7 +116,7 @@ func (client *BinanceClient) getKlines(symbol string, freq int, interval ChartIn
 		return nil, err
 	}
 
-	var klineResp []KlineResponse
+	var klineResp []klineResponse
 	if err := json.Unmarshal(body, &klineResp); err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (client *BinanceClient) getKlines(symbol string, freq int, interval ChartIn
 }
 
 // Representation of the order book response
-type OrderBookResponse struct {
+type orderBookResponse struct {
 	LastUpdateId int
 	Bids         [][]string
 	Asks         [][]string
@@ -147,7 +147,7 @@ type OrderBookResponse struct {
 // 	return nil
 // }
 
-func (client *BinanceClient) getOrderBook(symbol string, limit int) (float64, error) {
+func (client *binanceClient) getOrderBook(symbol string, limit int) (float64, error) {
 	if limit < 1 {
 		log.Print("Error: invalid limit for order books, defaulting to 1")
 		limit = 1
@@ -166,7 +166,7 @@ func (client *BinanceClient) getOrderBook(symbol string, limit int) (float64, er
 		return 0.0, err
 	}
 
-	var orderBookResp OrderBookResponse
+	var orderBookResp orderBookResponse
 	if err := json.Unmarshal(body, &orderBookResp); err != nil {
 		return 0.0, err
 	}

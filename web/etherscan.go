@@ -9,13 +9,13 @@ import (
 	"os"
 )
 
-type EtherscanAPI struct {
+type etherscanAPI struct {
 	Status  string
 	Message string
-	Result  []EtherscanTransaction
+	Result  []etherscanTransaction
 }
 
-type EtherscanTransaction struct {
+type etherscanTransaction struct {
 	BlockNumber       string
 	TimeStamp         string
 	Hash              string
@@ -37,14 +37,14 @@ type EtherscanTransaction struct {
 	Confirmations     string
 }
 
-type EtherscanClient struct {
+type etherscanClient struct {
 	apiKey string
 }
 
 //func (client *EtherscanClient) fetchDatedTransactions() ([]EtherscanTransaction, error) {
 //}
 
-func (client *EtherscanClient) fetchTransactions() ([]EtherscanTransaction, error) {
+func (client *etherscanClient) fetchTransactions() ([]etherscanTransaction, error) {
 	queries := map[string]string{
 		"action":          "tokentx",
 		"module":          "account",
@@ -74,7 +74,7 @@ func (client *EtherscanClient) fetchTransactions() ([]EtherscanTransaction, erro
 		return nil, err
 	}
 
-	var etherScan EtherscanAPI
+	var etherScan etherscanAPI
 	err = json.Unmarshal(body, &etherScan)
 	if err != nil {
 		log.Print("Error: could not unmarshal etherscan results.")
@@ -92,11 +92,11 @@ func (client *EtherscanClient) fetchTransactions() ([]EtherscanTransaction, erro
 	return etherScan.Result, nil
 }
 
-func makeEtherscan() (*EtherscanClient, error) {
+func makeEtherscan() (*etherscanClient, error) {
 	apiKey := os.Getenv("etherscan_api")
 	if len(apiKey) == 0 {
 		log.Print("Error: API key etherscan_api not found in env variables.")
 		return nil, fmt.Errorf("Error: API key etherscan_api not found in env variables.")
 	}
-	return &EtherscanClient{apiKey: apiKey}, nil
+	return &etherscanClient{apiKey: apiKey}, nil
 }

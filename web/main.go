@@ -4,13 +4,13 @@ import (
 	"log"
 )
 
-type Transaction struct {
+type cryptoTransaction struct {
 	Hash string  `json:"hash"`
 	Fee  float64 `json:"fee"`
 }
 
 // TODO: Store Transactions in DB
-var Transactions []Transaction
+var transactions []cryptoTransaction
 var latestHash string
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	q := make(chan bool)
 	go PollTransactions(q)
 
-	Transactions = []Transaction{}
+	transactions = []cryptoTransaction{}
 
 	// Serve
 	Serve("5050")

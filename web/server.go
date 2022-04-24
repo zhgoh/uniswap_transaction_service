@@ -10,9 +10,9 @@ import (
 )
 
 type transactionResponse struct {
-	ErrorCode    int         `json:"errorcode"`
-	Transactions Transaction `json:"transactions"`
-	Message      string      `json:"message"`
+	ErrorCode    int               `json:"errorcode"`
+	Transactions cryptoTransaction `json:"transactions"`
+	Message      string            `json:"message"`
 }
 
 type batchRequest struct {
@@ -105,7 +105,7 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the transaction
-	for _, transaction := range Transactions {
+	for _, transaction := range transactions {
 		if transaction.Hash == hashes[0] {
 			transactionResp.Message = "Found transactions."
 			transactionResp.ErrorCode = 0
@@ -124,5 +124,5 @@ func allTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Getting all transactions.")
-	json.NewEncoder(w).Encode(Transactions)
+	json.NewEncoder(w).Encode(transactions)
 }
