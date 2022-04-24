@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"testing"
 )
 
@@ -68,5 +69,24 @@ func Test_getKlines_end(t *testing.T) {
 		if got[len(got)-1].Open != want {
 			t.Errorf("got %q, wanted %q", got, want)
 		}
+	}
+}
+
+const float64EqualityThreshold = 1e-9
+
+func almostEqual(a, b float64) bool {
+	return math.Abs(a-b) <= float64EqualityThreshold
+}
+
+func Test_getOrderBooks(t *testing.T) {
+	// Test binance getkline function with end time
+	client := makeBinanceClient()
+	got, err := client.getOrderBook("ETHUSDT", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if almostEqual(0.0, got) {
+		t.Fatal("Error: No results from orderbook api.")
 	}
 }

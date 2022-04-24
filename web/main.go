@@ -11,8 +11,8 @@ import (
 )
 
 type Transaction struct {
-	Hash string `json:"hash"`
-	Fee  string `json:"fee"`
+	Hash string  `json:"hash"`
+	Fee  float64 `json:"fee"`
 }
 
 type TransactionRequest struct {
@@ -35,6 +35,12 @@ type BatchResponse struct {
 	Message   string `json:"message"`
 }
 
+type LiveTransaction struct {
+	hash      string
+	price     float64
+	timeStamp int
+}
+
 // TODO: Store Transactions in DB
 var Transactions []Transaction
 var latestHash string
@@ -50,12 +56,10 @@ func main() {
 	// }
 	// defer db.Close()
 
-	// q := make(chan bool)
-	// go pollTransactions(q)
+	q := make(chan bool)
+	go pollTransactions(q)
 
-	Transactions = []Transaction{
-		{Hash: "0x1", Fee: "10"},
-	}
+	Transactions = []Transaction{}
 
 	// Serve
 	serve("5050")
@@ -164,66 +168,108 @@ func pollTransactions(quit chan bool) {
 	etherClient, err := makeEtherscan()
 	if err != nil {
 		log.Print("Error: did not create etherscan client properly.")
+		log.Print("Shutting down live transactions fetching.")
 		return
 	}
 
 	binanceClient := makeBinanceClient()
-	var latestTime time.Time
 
-	//for {
-	select {
-	case <-quit:
-		log.Print("Polling stopped.")
-		return
-	default:
-		log.Print("Checking for transactions.")
-		latestTime = time.Now()
+	for {
+		select {
+		case <-quit:
+			log.Print("Polling stopped.")
+			return
+		default:
+			log.Print("Checking for transactions.")
 
-		transactions, err := etherClient.fetchTransactions()
-		if err != nil {
-			// Log error and try again later
-			log.Print("Error: Failed to fetch transaction")
-			log.Print(err)
+			// Will fetch latest price from order books and used it to store in latest transactions
+			prices, err := binanceClient.getOrderBook("ETHUSDT", 0)
+			if err != nil {
+				log.Print("Error: getting prices, will try again later")
+				log.Print(err)
+				continue
+			}
+
+			etherTransactions, err := etherClient.fetchTransactions()
+			if err != nil {
+				// Log error and try again later
+				log.Print("Error: Failed to fetch etherscan transaction")
+				log.Print(err)
+				continue
+			}
+
+			if err := addTransactions(etherTransactions, prices); err != nil {
+				log.Print("Error: getting transactions, will try again later")
+				log.Print(err)
+				continue
+			}
+
+			// Try fetching again
+			time.Sleep(60 * time.Second)
 		}
-
-		binanceClient.getKlines("ETHUSDT", 1, Days, latestTime.UnixMilli(), 0, 0)
-
-		// Add transactions to db
-		addTransactions(transactions)
-		time.Sleep(60 * time.Second)
 	}
-	//}
 }
 
-func addTransactions(transactions []EtherscanTransaction) {
-	// Look though all fetched transactions and skip the older ones
-	for _, v := range transactions {
+//func getDailyPrice(client *BinanceClient, time int64) (map[int]float64, error) {
+//	// Get daily prices data from 0 to current time
+//	klineResp, err := client.getKlines("ETHUSDT", 1, Days, 0, time, 0)
+//	if err != nil {
+//		log.Print("Error: Failed to get kline results")
+//	}
+//
+//	// Collate the price from kline api
+//	prices := make(map[int]float64)
+//	for _, v := range klineResp {
+//		close, err := strconv.ParseFloat(v.Close, 64)
+//		if err != nil {
+//			log.Print("Error: failed to convert closing price")
+//			return nil, err
+//		}
+//		prices[v.CloseTime] = close
+//	}
+//	return prices, nil
+//}
+
+func addTransactions(etherTransactions []EtherscanTransaction, prices float64) error {
+	for _, v := range etherTransactions {
+		if len(v.Hash) == 0 {
+			return fmt.Errorf("hash is empty.")
+		}
+
 		if v.Hash == latestHash {
-			latestHash = transactions[0].Hash
+			// Once we reached the last seen hash, we save the first hash as the last loaded transaction
+			latestHash = etherTransactions[0].Hash
 			break
 		}
 
+		// Compute prices
 		gasPrice, err := strconv.Atoi(v.GasPrice)
 		if err != nil {
 			log.Print("Error: failed to convert gas price to integer.")
-			continue
+			return err
 		}
 
 		gasUsed, err := strconv.Atoi(v.GasUsed)
 		if err != nil {
 			log.Print("Error: failed to convert gas used to integer.")
-			continue
+			return err
 		}
 
-		price := float64(gasPrice*gasUsed) / 100000000000000000
-		log.Printf("Hash: %s, Price: %f\n", v.Hash, price)
+		timeStamp, err := strconv.Atoi(v.TimeStamp)
+		if err != nil {
+			log.Print("Error: failed to convert timeStamp.")
+			return err
+		}
 
-		//Transactions = append(Transactions, Transaction{Hash: v.Hash, Fee: v.})
+		// Fees in eth
+		fees := float64(gasPrice*gasUsed) / 100000000000000000
+
+		// Convert to price in USDT
+		fees *= prices
+
+		// TODO: Add to DB
+		log.Printf("Hash: %s, Time: %d, Fees: $%.2f", v.Hash, timeStamp, fees)
+		Transactions = append(Transactions, Transaction{v.Hash, fees})
 	}
-
-	if len(latestHash) == 0 {
-		latestHash = transactions[0].Hash
-	}
-
-	log.Printf("Latest hash: %s\n", latestHash)
+	return nil
 }

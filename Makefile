@@ -6,10 +6,13 @@ all:
 
 run: build
 	cls
-	.\web\main.exe
+	.\web\backend.exe
 
 build:
-	cd web && go build main.go etherscan.go
+	cd web && go build .
 
 test:
 	cls && cd web && go test
+
+tidy:
+	cls && cd web && go mod tidy

@@ -5,19 +5,17 @@ import (
 )
 
 func Test_AddTransaction(t *testing.T) {
-
-	client, err := makeEtherscan()
-	if err != nil {
-		t.Fatal(err)
+	etherScanTransactions := []EtherscanTransaction{
+		{
+			Hash:      "0xf5bc869730283da55772add53c542ad1cb9d9f8452d20c62fb4141224812cabc",
+			GasPrice:  "44401991519",
+			GasUsed:   "149542",
+			TimeStamp: "1650727793",
+		},
 	}
+	var prices float64 = 2948.71
 
-	transaction, err := client.fetchTransactions()
-	if err != nil {
-		t.Error(err)
-	}
-	addTransactions(transaction)
-
-	if len(transaction) != 100 {
-		t.Fail()
+	if err := addTransactions(etherScanTransactions, prices); err != nil {
+		t.Fatal("Error adding transactions")
 	}
 }

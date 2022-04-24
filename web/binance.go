@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type ChartInterval int64
@@ -36,10 +37,10 @@ func (chart ChartInterval) String() string {
 	return "unknown"
 }
 
-type binanceClient struct{}
+type BinanceClient struct{}
 
-func makeBinanceClient() *binanceClient {
-	return &binanceClient{}
+func makeBinanceClient() *BinanceClient {
+	return &BinanceClient{}
 }
 
 // Representation of the kline response
@@ -85,7 +86,7 @@ func (k *KlineResponse) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
-func (client *binanceClient) getKlines(symbol string, freq int, interval ChartInterval, startTime, endTime, limit int64) ([]KlineResponse, error) {
+func (client *BinanceClient) getKlines(symbol string, freq int, interval ChartInterval, startTime, endTime, limit int64) ([]KlineResponse, error) {
 	queries := make(map[string]int64)
 	if startTime > 0 {
 		queries["startTime"] = startTime
@@ -120,4 +121,61 @@ func (client *binanceClient) getKlines(symbol string, freq int, interval ChartIn
 		return nil, err
 	}
 	return klineResp, nil
+}
+
+// Representation of the order book response
+type OrderBookResponse struct {
+	LastUpdateId int
+	Bids         [][]string
+	Asks         [][]string
+}
+
+// Custom unmarshal json to support unmarshalling arrays
+// func (r *OrderBookResponse) UnmarshalJSON(buf []byte) error {
+// 	tmp := []interface{}{
+// 		&r.Price,
+// 		&r.Quantity,
+// 	}
+//
+// 	wantLen := len(tmp)
+// 	if err := json.Unmarshal(buf, &tmp); err != nil {
+// 		return err
+// 	}
+// 	if g, e := len(tmp), wantLen; g != e {
+// 		return fmt.Errorf("wrong number of fields in OrderBookResponse: %d != %d", g, e)
+// 	}
+// 	return nil
+// }
+
+func (client *BinanceClient) getOrderBook(symbol string, limit int) (float64, error) {
+	if limit < 1 {
+		log.Print("Error: invalid limit for order books, defaulting to 1")
+		limit = 1
+	}
+
+	// Get the kline api and unmarshal using custom func to our klineResponse struct
+	api := fmt.Sprintf("https://api.binance.com/api/v3/depth?symbol=%s&limit=%d", symbol, limit)
+	resp, err := http.Get(api)
+	if err != nil {
+		return 0.0, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0.0, err
+	}
+
+	var orderBookResp OrderBookResponse
+	if err := json.Unmarshal(body, &orderBookResp); err != nil {
+		return 0.0, err
+	}
+
+	// TODO: Find a way to compute better pricing
+	price, err := strconv.ParseFloat(orderBookResp.Bids[0][0], 64)
+	if err != nil {
+		return 0.0, err
+	}
+
+	return price, nil
 }
