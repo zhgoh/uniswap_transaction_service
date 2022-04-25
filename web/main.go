@@ -4,31 +4,26 @@ import (
 	"log"
 )
 
+// cryptoTransaction is a data type that is used to store the current transactions info after processing.
 type cryptoTransaction struct {
 	Hash string  `json:"hash"`
 	Fee  float64 `json:"fee"`
 }
 
-// TODO: Store Transactions in DB
+// TODO: Store Transactions in DB, and remove global variables
 var db []cryptoTransaction
 var latestHash string
 
+// main is just the entry point of our backend service, we will run a goroutine that is polling
+// live transactions in the background.
 func main() {
 	log.Println("Transactions service.")
 
-	// TODO: Have a goroutine running in the background to poll live data
-	// db, err := sql.Open("sqlite", "./test.sqlite")
-	// if err != nil {
-	// 	log.Print("Error: opening SQLite db.")
-
-	// }
-	// defer db.Close()
-
 	q := make(chan bool)
-	go PollTransactions(q)
+	go pollTransactions(q)
 
 	db = []cryptoTransaction{}
 
 	// Serve
-	Serve("5050")
+	serve("5050")
 }

@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func PollTransactions(quit chan bool) {
+func pollTransactions(quit chan bool) {
 	log.Print("Polling live transactions.")
 
 	etherClient, err := makeEtherscan()

@@ -25,7 +25,7 @@ type batchResponse struct {
 	Message   string `json:"message"`
 }
 
-func Serve(port string) {
+func serve(port string) {
 	// TODO: Provide REST api for the following,
 	http.HandleFunc("/", homePageHandler)
 
