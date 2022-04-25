@@ -14,7 +14,7 @@ type klinePrice struct {
 
 func batch(startTime, endTime time.Time) error {
 	log.Print("Starting batch job.")
-	log.Printf("Start: %d, End: %d", startTime.Unix(), endTime.Unix())
+	//log.Printf("Start: %d, End: %d", startTime.Unix(), endTime.Unix())
 
 	// Split the code into internal scope for easier to manage variables
 	var transactions []etherscanTransaction
@@ -46,9 +46,9 @@ func batch(startTime, endTime time.Time) error {
 			return err
 		}
 
-		for _, v := range transactions {
-			log.Print(v.TimeStamp)
-		}
+		//for _, v := range transactions {
+		//	log.Print(v.TimeStamp)
+		//}
 	}
 
 	// Binance kline api pull
@@ -83,7 +83,7 @@ func batch(startTime, endTime time.Time) error {
 				klineData = append(klineData, klinePrice{price: closePrice, timeStamp: time.Unix(v.CloseTime, 0)})
 			}
 
-			log.Printf("Start: %d, End: %d", startTime.Unix(), endTime.Unix())
+			// log.Printf("Start: %d, End: %d", startTime.Unix(), endTime.Unix())
 			startTime = time.UnixMilli(klineResp[len(klineResp)-1].CloseTime)
 		}
 
@@ -95,7 +95,7 @@ func batch(startTime, endTime time.Time) error {
 				return err
 			}
 
-			log.Printf("Timestamp: %v, kline: %v", timeStamp, klineData[0].timeStamp)
+			// log.Printf("Timestamp: %v, kline: %v", timeStamp, klineData[0].timeStamp)
 			price := binarySearchKline(klineData, time.Unix(timeStamp, 0))
 
 			err = addSingleTransaction(v, price)

@@ -5,6 +5,7 @@ import (
 )
 
 func Test_AddTransaction(t *testing.T) {
+	db = []cryptoTransaction{}
 	etherScanTransactions := []etherscanTransaction{
 		{
 			Hash:      "0x48888e465a61d4f9908dab1d18d9ab67d8227d72a44f58ecb00750b719df9b9c",
@@ -27,7 +28,7 @@ func Test_AddTransaction(t *testing.T) {
 	}
 	var prices float64 = 2948.71
 
-	if err := addTransactions(etherScanTransactions, prices); err != nil {
+	if err := addLiveTransactions(etherScanTransactions, prices); err != nil {
 		t.Fatal("Error adding transactions")
 	}
 
@@ -52,12 +53,12 @@ func Test_AddTransaction(t *testing.T) {
 		},
 	}
 
-	if err := addTransactions(etherScanTransactions, prices); err != nil {
+	if err := addLiveTransactions(etherScanTransactions, prices); err != nil {
 		t.Fatal("Error adding transactions.")
 	}
 
 	want := 5
-	if len(db) < want {
+	if len(db) != want {
 		t.Errorf("Want: %d, Got: %d", want, len(db))
 	}
 }

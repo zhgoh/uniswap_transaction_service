@@ -43,7 +43,7 @@ func PollTransactions(quit chan bool) {
 				continue
 			}
 
-			if err := addTransactions(etherTransactions, prices); err != nil {
+			if err := addLiveTransactions(etherTransactions, prices); err != nil {
 				log.Print("Error: getting transactions, will try again later")
 				log.Print(err)
 				continue
@@ -55,7 +55,7 @@ func PollTransactions(quit chan bool) {
 	}
 }
 
-func addTransactions(etherTransactions []etherscanTransaction, prices float64) error {
+func addLiveTransactions(etherTransactions []etherscanTransaction, prices float64) error {
 	if len(etherTransactions) == 0 {
 		return fmt.Errorf("no transactions provided")
 	}

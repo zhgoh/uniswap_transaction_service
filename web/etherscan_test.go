@@ -6,7 +6,7 @@ import (
 )
 
 func Test_FetchTransaction(t *testing.T) {
-
+	db = []cryptoTransaction{}
 	client, err := makeEtherscan()
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +31,7 @@ func Test_FetchTransaction(t *testing.T) {
 		}
 
 		want := 4
-		if len(transaction) < want {
+		if len(transaction) != want {
 			t.Errorf("Want: %d, got %d", want, len(transaction))
 		}
 	}
