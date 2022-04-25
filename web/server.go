@@ -27,14 +27,14 @@ type batchResponse struct {
 
 func Serve(port string) {
 	// TODO: Provide REST api for the following,
-	http.HandleFunc("/", homePage)
+	http.HandleFunc("/", homePageHandler)
 
 	// TODO: API: batch job
-	http.HandleFunc("/batch", batch)
+	http.HandleFunc("/batch", batchHandler)
 
 	// TODO: API: Get transaction fee given transaction hash
-	http.HandleFunc("/transactions", transaction)
-	http.HandleFunc("/transactions/all", allTransaction)
+	http.HandleFunc("/transactions", transactionHandler)
+	http.HandleFunc("/transactions/all", allTransactionHandler)
 
 	// TODO: Bonus API: Decode actual Uniswap swap price
 
@@ -44,13 +44,13 @@ func Serve(port string) {
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
-func homePage(w http.ResponseWriter, r *http.Request) {
+func homePageHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Endpoints\n")
 	fmt.Fprintf(w, "GET  /transactions\n")
 	fmt.Fprintf(w, "PUT  /batch\n")
 }
 
-func batch(w http.ResponseWriter, r *http.Request) {
+func batchHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		w.WriteHeader(404)
 		log.Print("Only PUT method supported on batch.")
@@ -81,10 +81,12 @@ func batch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Processing transactions between %s and %s", batchReq.Start, batchReq.End)
+	batch(batchReq.Start, batchReq.End)
+
 	json.NewEncoder(w).Encode(batchResp)
 }
 
-func transaction(w http.ResponseWriter, r *http.Request) {
+func transactionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(404)
 		log.Print("Only GET method supported on transactions.")
@@ -116,7 +118,7 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(transactionResp)
 }
 
-func allTransaction(w http.ResponseWriter, r *http.Request) {
+func allTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(404)
 		log.Print("Only GET method supported on transactions.")

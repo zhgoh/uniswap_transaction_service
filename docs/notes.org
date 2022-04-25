@@ -30,7 +30,15 @@ https://api.etherscan.io/api
    &sort=asc
    &apikey=YourApiKeyToken
 
-Problem: How to get data given a time period? This would be needed for the batch fetch api
+Problem: How to get data given a time period? This would be needed for the batch fetch api,
+
+The idea I have for now is to use the following api, to get the block number for use with the above api
+https://api.etherscan.io/api
+   ?module=block
+   &action=getblocknobytime
+   &timestamp=1578638524
+   &closest=before
+   &apikey=YourApiKeyToken
 
 * Getting USDT/ETH
 
