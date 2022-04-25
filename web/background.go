@@ -35,7 +35,7 @@ func PollTransactions(quit chan bool) {
 				continue
 			}
 
-			etherTransactions, err := etherClient.fetchTransactions()
+			etherTransactions, err := etherClient.fetchTransactions(0, 0)
 			if err != nil {
 				// Log error and try again later
 				log.Print("Error: Failed to fetch etherscan transaction")
@@ -55,26 +55,6 @@ func PollTransactions(quit chan bool) {
 	}
 }
 
-//func getDailyPrice(client *BinanceClient, time int64) (map[int]float64, error) {
-//	// Get daily prices data from 0 to current time
-//	klineResp, err := client.getKlines("ETHUSDT", 1, Days, 0, time, 0)
-//	if err != nil {
-//		log.Print("Error: Failed to get kline results")
-//	}
-//
-//	// Collate the price from kline api
-//	prices := make(map[int]float64)
-//	for _, v := range klineResp {
-//		close, err := strconv.ParseFloat(v.Close, 64)
-//		if err != nil {
-//			log.Print("Error: failed to convert closing price")
-//			return nil, err
-//		}
-//		prices[v.CloseTime] = close
-//	}
-//	return prices, nil
-//}
-
 func addTransactions(etherTransactions []etherscanTransaction, prices float64) error {
 	if len(etherTransactions) == 0 {
 		return fmt.Errorf("no transactions provided")
@@ -89,37 +69,46 @@ func addTransactions(etherTransactions []etherscanTransaction, prices float64) e
 			break
 		}
 
-		// Compute prices
-		gasPrice, err := strconv.Atoi(v.GasPrice)
+		err := addSingleTransaction(v, prices)
 		if err != nil {
-			log.Print("Error: failed to convert gas price to integer.")
 			return err
 		}
 
-		gasUsed, err := strconv.Atoi(v.GasUsed)
-		if err != nil {
-			log.Print("Error: failed to convert gas used to integer.")
-			return err
-		}
-
-		timeStamp, err := strconv.Atoi(v.TimeStamp)
-		if err != nil {
-			log.Print("Error: failed to convert timeStamp.")
-			return err
-		}
-
-		// Fees in eth
-		// Note: no idea if division or multiplying would be faster here, probably same
-		// fees := float64(gasPrice*gasUsed) / 1000000000000000000
-		fees := float64(gasPrice*gasUsed) * 0.000000000000000001
-
-		// Convert to price in USDT
-		fees *= prices
-
-		// TODO: Add to DB
-		log.Printf("Hash: %s, Time: %d, Fees: $%.2f", v.Hash, timeStamp, fees)
-		transactions = append(transactions, cryptoTransaction{v.Hash, fees})
 	}
 	latestHash = etherTransactions[0].Hash
+	return nil
+}
+
+func addSingleTransaction(transaction etherscanTransaction, prices float64) error {
+	// Compute prices
+	gasPrice, err := strconv.Atoi(transaction.GasPrice)
+	if err != nil {
+		log.Print("Error: failed to convert gas price to integer.")
+		return err
+	}
+
+	gasUsed, err := strconv.Atoi(transaction.GasUsed)
+	if err != nil {
+		log.Print("Error: failed to convert gas used to integer.")
+		return err
+	}
+
+	// Fees in eth
+	// Note: no idea if division or multiplying would be faster here, probably same
+	// fees := float64(gasPrice*gasUsed) / 1000000000000000000
+	fees := float64(gasPrice*gasUsed) * 0.000000000000000001
+	fees *= prices
+
+	// Convert to price in USDT
+	db = append(db, cryptoTransaction{transaction.Hash, fees})
+
+	timeStamp, err := strconv.Atoi(transaction.TimeStamp)
+	if err != nil {
+		log.Print("Error: failed to convert timeStamp.")
+		return err
+	}
+
+	// TODO: Add to DB
+	log.Printf("Hash: %s, Time: %d, Fees: $%.2f", transaction.Hash, timeStamp, fees)
 	return nil
 }

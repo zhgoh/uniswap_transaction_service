@@ -53,10 +53,10 @@ func Test_AddTransaction(t *testing.T) {
 	}
 
 	if err := addTransactions(etherScanTransactions, prices); err != nil {
-		t.Fatal("Error adding transactions")
+		t.Fatal("Error adding transactions.")
 	}
 
-	if len(transactions) != 5 {
-		t.Fatal("Error when adding transactions. Some entries might be duplicated")
+	if len(db) != 5 {
+		t.Fatal("Error when adding transactions. Some entries might be duplicated.")
 	}
 }

@@ -7,7 +7,14 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
+
+type binanceClient struct{}
+
+func makeBinanceClient() *binanceClient {
+	return &binanceClient{}
+}
 
 type chartInterval int64
 
@@ -37,21 +44,15 @@ func (chart chartInterval) String() string {
 	return "unknown"
 }
 
-type binanceClient struct{}
-
-func makeBinanceClient() *binanceClient {
-	return &binanceClient{}
-}
-
 // Representation of the kline response
 type klineResponse struct {
-	OpenTime              int
+	OpenTime              int64
 	Open                  string
 	High                  string
 	Low                   string
 	Close                 string
 	Volume                string
-	CloseTime             int
+	CloseTime             int64
 	QuoteAssetVol         string
 	NumTrades             int
 	TakerBuyBaseAssetVol  string
@@ -86,14 +87,16 @@ func (k *klineResponse) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
-func (client *binanceClient) getKlines(symbol string, freq int, interval chartInterval, startTime, endTime, limit int64) ([]klineResponse, error) {
+func (client *binanceClient) getKlines(symbol string, freq int, interval chartInterval, startTime, endTime time.Time, limit int64) ([]klineResponse, error) {
 	queries := make(map[string]int64)
-	if startTime > 0 {
-		queries["startTime"] = startTime
+	if !startTime.IsZero() {
+		queries["startTime"] = startTime.UnixMilli()
 	}
-	if endTime > 0 {
-		queries["endTime"] = endTime
+
+	if !endTime.IsZero() {
+		queries["endTime"] = endTime.UnixMilli()
 	}
+
 	if limit > 0 {
 		queries["limit"] = limit
 	}
@@ -130,23 +133,6 @@ type orderBookResponse struct {
 	Asks         [][]string
 }
 
-// Custom unmarshal json to support unmarshalling arrays
-// func (r *OrderBookResponse) UnmarshalJSON(buf []byte) error {
-// 	tmp := []interface{}{
-// 		&r.Price,
-// 		&r.Quantity,
-// 	}
-//
-// 	wantLen := len(tmp)
-// 	if err := json.Unmarshal(buf, &tmp); err != nil {
-// 		return err
-// 	}
-// 	if g, e := len(tmp), wantLen; g != e {
-// 		return fmt.Errorf("wrong number of fields in OrderBookResponse: %d != %d", g, e)
-// 	}
-// 	return nil
-// }
-
 func (client *binanceClient) getOrderBook(symbol string, limit int) (float64, error) {
 	if limit < 1 {
 		log.Print("Error: invalid limit for order books, defaulting to 1")
@@ -177,5 +163,31 @@ func (client *binanceClient) getOrderBook(symbol string, limit int) (float64, er
 		return 0.0, err
 	}
 
+	return price, nil
+}
+
+func (client *binanceClient) getSymbolPrice(symbol string) (float64, error) {
+	// Get the kline api and unmarshal using custom func to our klineResponse struct
+	api := fmt.Sprintf("https://api.binance.com/api/v3/ticker/price?symbol=%s", symbol)
+	resp, err := http.Get(api)
+	if err != nil {
+		return 0.0, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0.0, err
+	}
+
+	var priceResp map[string]string
+	if err := json.Unmarshal(body, &priceResp); err != nil {
+		return 0.0, err
+	}
+
+	price, err := strconv.ParseFloat(priceResp["price"], 64)
+	if err != nil {
+		return 0.0, err
+	}
 	return price, nil
 }

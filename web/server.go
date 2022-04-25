@@ -107,7 +107,7 @@ func transactionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the transaction
-	for _, transaction := range transactions {
+	for _, transaction := range db {
 		if transaction.Hash == hashes[0] {
 			transactionResp.Message = "Found transactions."
 			transactionResp.ErrorCode = 0
@@ -126,5 +126,5 @@ func allTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Getting all transactions.")
-	json.NewEncoder(w).Encode(transactions)
+	json.NewEncoder(w).Encode(db)
 }

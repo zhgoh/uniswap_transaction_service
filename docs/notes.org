@@ -110,3 +110,12 @@ output:
     },
     "message": "No transactions hash found"
 }
+
+* Environment variables
+
+Nushell:
+#+begin_src shell
+
+let-env FOO = 'BAR'
+
+#+end_src

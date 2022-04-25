@@ -10,7 +10,7 @@ type cryptoTransaction struct {
 }
 
 // TODO: Store Transactions in DB
-var transactions []cryptoTransaction
+var db []cryptoTransaction
 var latestHash string
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	q := make(chan bool)
 	go PollTransactions(q)
 
-	transactions = []cryptoTransaction{}
+	db = []cryptoTransaction{}
 
 	// Serve
 	Serve("5050")
