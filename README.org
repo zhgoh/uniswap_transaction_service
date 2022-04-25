@@ -1,5 +1,5 @@
 #+title: Readme
-* Altonomy take home assignment
+* Uniswap transaction prices backend
 
 * Requirements
 ** TODO Use git
@@ -7,14 +7,3 @@
 ** TODO Dockerize
 ** TODO Readme
 ** TODO Use proper coding style
-
-* Setup
-
-** API Key
-
-Create a new file called key
-
-** Running
-
-let-env FLASK_APP = 'hello.py'
-flask run
