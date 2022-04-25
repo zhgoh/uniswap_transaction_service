@@ -74,14 +74,19 @@ func batchHandler(w http.ResponseWriter, r *http.Request) {
 	var batchReq batchRequest
 	err = json.Unmarshal(reqBody, &batchReq)
 	if err != nil {
-		log.Print("Error: Cannot unmarshal batch request.")
+		log.Print("Error: cannot unmarshal batch request.")
 		batchResp.ErrorCode = 1
 		batchResp.Message = "Error: cannot unmarshal batch request."
 		return
 	}
 
 	log.Printf("Processing transactions between %s and %s", batchReq.Start, batchReq.End)
-	batch(batchReq.Start, batchReq.End)
+	err = batch(batchReq.Start, batchReq.End)
+	if err != nil {
+		log.Print(err)
+		batchResp.ErrorCode = 1
+		batchResp.Message = err.Error()
+	}
 
 	json.NewEncoder(w).Encode(batchResp)
 }

@@ -24,8 +24,8 @@ func main() {
 	// }
 	// defer db.Close()
 
-	q := make(chan bool)
-	go PollTransactions(q)
+	//q := make(chan bool)
+	//go PollTransactions(q)
 
 	db = []cryptoTransaction{}
 

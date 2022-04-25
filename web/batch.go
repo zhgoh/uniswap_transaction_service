@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"strconv"
@@ -13,6 +14,10 @@ type klinePrice struct {
 }
 
 func batch(startTime, endTime time.Time) error {
+	if startTime.Equal(endTime) {
+		return fmt.Errorf("start and end time is the same")
+	}
+
 	log.Print("Starting batch job.")
 	//log.Printf("Start: %d, End: %d", startTime.Unix(), endTime.Unix())
 
@@ -39,6 +44,8 @@ func batch(startTime, endTime time.Time) error {
 			return err
 		}
 
+		// log.Print(startBlock, endBlock)
+
 		// Get transactions limited by start and end block number
 		transactions, err = etherScanClient.fetchTransactions(startBlock, endBlock)
 		if err != nil {
@@ -47,7 +54,7 @@ func batch(startTime, endTime time.Time) error {
 		}
 
 		//for _, v := range transactions {
-		//	log.Print(v.TimeStamp)
+		//	log.Print(v.Hash)
 		//}
 	}
 
@@ -69,7 +76,7 @@ func batch(startTime, endTime time.Time) error {
 			}
 
 			if len(klineResp) == 0 {
-				log.Print("Finished getting all kline data.")
+				// log.Print("Finished getting all kline data.")
 				// Break when no kline response, probably finished
 				break
 			}
@@ -97,6 +104,7 @@ func batch(startTime, endTime time.Time) error {
 
 			// log.Printf("Timestamp: %v, kline: %v", timeStamp, klineData[0].timeStamp)
 			price := binarySearchKline(klineData, time.Unix(timeStamp, 0))
+			// log.Printf("Price: %f", price)
 
 			err = addSingleTransaction(v, price)
 			if err != nil {

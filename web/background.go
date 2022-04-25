@@ -80,6 +80,13 @@ func addLiveTransactions(etherTransactions []etherscanTransaction, prices float6
 }
 
 func addSingleTransaction(transaction etherscanTransaction, prices float64) error {
+	for _, v := range db {
+		if v.Hash == transaction.Hash {
+			// Ignore duplicates
+			return nil
+		}
+	}
+
 	// Compute prices
 	gasPrice, err := strconv.Atoi(transaction.GasPrice)
 	if err != nil {

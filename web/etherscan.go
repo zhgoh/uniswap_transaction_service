@@ -102,8 +102,8 @@ func (client *etherscanClient) fetchTransactions(startBlock, endBlock int) ([]et
 		return nil, err
 	}
 
-	log.Print("Successfully get transactions.")
-	log.Printf("Got %d entries.", len(transactionResp.Result))
+	//log.Print("Successfully get transactions.")
+	//log.Printf("Got %d entries.", len(transactionResp.Result))
 	return transactionResp.Result, nil
 }
 
@@ -171,8 +171,8 @@ func (client *etherscanClient) getBlockNumberByTimestamp(closest closestBlock, t
 		return 0, err
 	}
 
-	log.Print("Successfully get block information.")
-	log.Printf("Got %d entries.", len(blockResp.Result))
+	// log.Print("Successfully get block information.")
+	// log.Printf("Got %d entries.", len(blockResp.Result))
 
 	res, err := strconv.Atoi(blockResp.Result)
 	if err != nil {

@@ -44,6 +44,30 @@ func Test_addSingleTransaction(t *testing.T) {
 			GasPrice:    "44901991519",
 			GasUsed:     "159030",
 			TimeStamp:   "1650727793",
+			Hash:        "0x4123",
+		}
+		prices := 1000.0
+		err := addSingleTransaction(transaction, prices)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got := len(db)
+		want := 1
+
+		if got != want {
+			t.Errorf("Got %d, Want: %d", got, want)
+		}
+	}
+
+	{
+		// Should not be adding duplicate entry
+		transaction := etherscanTransaction{
+			BlockNumber: "0x1",
+			GasPrice:    "44901991519",
+			GasUsed:     "159030",
+			TimeStamp:   "1650727793",
+			Hash:        "0x4123",
 		}
 		prices := 1000.0
 		err := addSingleTransaction(transaction, prices)
