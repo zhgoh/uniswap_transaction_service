@@ -2,8 +2,8 @@
 * Uniswap transaction prices backend
 
 * Requirements
-** TODO Use git
-** TODO Write test suite
-** TODO Dockerize
-** TODO Readme
-** TODO Use proper coding style
+- TODO Use git
+- TODO Write test suite
+- TODO Dockerize
+- TODO Readme
+- TODO Use proper coding style
