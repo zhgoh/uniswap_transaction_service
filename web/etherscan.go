@@ -64,11 +64,11 @@ func (client *etherscanClient) fetchTransactions(startBlock, endBlock int) ([]et
 	}
 
 	if startBlock > 0 {
-		queries["startblock"] = fmt.Sprintf("%d", startBlock)
+		queries["startblock"] = fmt.Sprint(startBlock)
 	}
 
 	if endBlock > 0 {
-		queries["endblock"] = fmt.Sprintf("%d", endBlock)
+		queries["endblock"] = fmt.Sprint(endBlock)
 	}
 
 	api := fmt.Sprintf("https://api.etherscan.io/api?apikey=%s", client.apiKey)
