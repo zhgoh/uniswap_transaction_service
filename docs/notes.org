@@ -119,3 +119,11 @@ Nushell:
 let-env FOO = 'BAR'
 
 #+end_src
+
+* Docker
+
+Notes when setting up docker stuff, as I don't always remember these.
+
+https://vsupalov.com/docker-build-time-env-values/
+https://docs.docker.com/language/golang/build-images/
+https://pythonspeed.com/articles/docker-connection-refused/

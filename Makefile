@@ -16,3 +16,9 @@ test:
 
 tidy:
 	cls && cd web && go mod tidy
+
+docker_build:
+	sudo docker build --build-arg buildtime_variable=a_value --tag backend .
+
+docker_run:
+	sudo docker run --rm -p 5000:5050 backend
