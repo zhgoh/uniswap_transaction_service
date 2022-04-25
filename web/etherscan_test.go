@@ -31,7 +31,7 @@ func Test_FetchTransaction(t *testing.T) {
 		}
 
 		want := 4
-		if len(transaction) != 4 {
+		if len(transaction) < want {
 			t.Errorf("Want: %d, got %d", want, len(transaction))
 		}
 	}

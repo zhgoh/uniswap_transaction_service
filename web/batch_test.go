@@ -32,38 +32,36 @@ func Test_binarySearch(t *testing.T) {
 		}
 	}
 
-	//{
-	//_, err := binarySearchKline(arr, time.Unix(1645779980, 0))
-	//if err == nil {
-	//t.Fatal("Binary search should fail on this, as no valid condition")
-	//}
-	//}
-	//
-	//{
-	//got, err := binarySearchKline(arr, time.Unix(1645780084, 0))
-	//if err != nil {
-	//t.Fatal(err)
-	//}
-	//want := 0.6
-	//if got != want {
-	//t.Fatalf("Want %f, Got %f", want, got)
-	//}
-	//}
+	{
+		got := binarySearchKline(arr, time.Unix(1645779979, 0))
+		want := 0.9
+		if got != want {
+			t.Fatalf("Want %f, Got %f", want, got)
+		}
+	}
+
+	{
+		got := binarySearchKline(arr, time.Unix(1645779988, 0))
+		want := 0.6
+		if got != want {
+			t.Fatalf("Want %f, Got %f", want, got)
+		}
+	}
 }
 
 func Test_batch(t *testing.T) {
-	//start, err := time.Parse(time.RFC3339, "2022-01-04T00:50:10.770Z")
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
+	start, err := time.Parse(time.RFC3339, "2022-01-04T00:50:10.770Z")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	//end, err := time.Parse(time.RFC3339, "2022-01-04T00:55:10.770Z")
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
+	end, err := time.Parse(time.RFC3339, "2022-01-04T00:55:10.770Z")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	//err = batch(start, end)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
+	err = batch(start, end)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

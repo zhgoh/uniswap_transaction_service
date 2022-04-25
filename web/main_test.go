@@ -56,7 +56,8 @@ func Test_AddTransaction(t *testing.T) {
 		t.Fatal("Error adding transactions.")
 	}
 
-	if len(db) != 5 {
-		t.Fatal("Error when adding transactions. Some entries might be duplicated.")
+	want := 5
+	if len(db) < want {
+		t.Errorf("Want: %d, Got: %d", want, len(db))
 	}
 }
