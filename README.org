@@ -1,15 +1,8 @@
 #+title: Readme
 * Uniswap transaction prices backend system
 
-This tool is a simpl backend REST api for getting live uniswap prices based on transaction data on etherscan and price data from Binance written
-in Go.
-
-* TODO Requirements
-- [X] Use git
-- [X] Write test suite
-- [X] Dockerize
-- [X] Readme
-- [X] Use proper coding style
+This is a proof-of-concept backend service written in Go to fetch Uniswap transactions from etherscan's api and compute the prices for the
+transactions using Binance's API.
 
 * Pre-requisites
 
@@ -35,19 +28,16 @@ For deploying on docker, the system would need docker and docker-compose.
 ** Clone project
 
 #+begin_src bash
-
 # Download project
 $ git clone https://gitlab.com/zhgoh/uniswap_transaction_service
 
 ### Run local
 $ cd uniswap_transaction_service
-
 #+end_src
 
 ** Setting up env variable
 
 #+begin_src bash
-
 # For running locally, export the env variable (for Unix OS), for Windows, can just add it in path in environment variable editor.
 $ etherscan_api=<your api key>
 $ export etherscan_api
@@ -58,7 +48,6 @@ $ export etherscan_api
 # ETHERSCAN_API=123123123MYAPIKEY123123
 $ touch web/.env
 $ nano web/.env
-
 #+end_src
 
 ** Running on Local
@@ -66,7 +55,6 @@ $ nano web/.env
 *** With Make
 
 #+begin_src bash
-
 # See all rule for make
 $ make
 
@@ -78,13 +66,11 @@ $ make test
 
 # To build the server without running, run
 $ make build
-
 #+end_src
 
 *** Without Make
 
 #+begin_src bash
-
 $ cd web
 
 # To run the server, run
@@ -95,13 +81,11 @@ $ go test .
 
 # To build the server without running, run
 $ go build .
-
 #+end_src
 
 ** Running with Docker
 
 #+begin_src bash
-
 ### Run with docker
 $ cd web
 
@@ -110,5 +94,103 @@ $ make docker_run
 
 # or just plain old docker-compose
 $ docker-compose up
-
 #+end_src
+
+** Testing the service
+
+Currently the default port used by docker/backend is 5050, once the backend is running, point the browser to [[http://localhost:5050][localhost:5050]], or test with curl
+with the following command,
+
+#+begin_src bash
+$ curl localhost:5050
+#+end_src
+It should have the list of endpoints, which can be called.
+
+To get only transaction by hash that the backend currently stores
+#+begin_src bash
+# Change hash with the hash that is needed
+$ curl --request GET \
+    --url 'http://localhost:5050/transactions?hash=0xa893b598641afe65ba380c1fec2a3cc19320146b0324909d4aeebed705587901'
+#+end_src
+
+To get only transaction by hash that the backend currently stores
+#+begin_src bash
+$ curl --request PUT \
+    --url http://localhost:5050/batch \
+    --header 'Content-Type: application/json' \
+    --data '{
+                "start": "2022-04-23T05:55:10.770Z",
+                "end": "2022-04-23T05:56:10.770Z"
+           }'
+#+end_src
+
+To get all transactions that the backend currently stores
+#+begin_src bash
+$ curl --request GET \
+    --url http://localhost:5050/transactions/all
+#+end_src
+
+* Design decisions
+
+** Programming Language
+
+At the beginning, Python was considered for this proof-of-concept as it is both an easy to use language with numerous library, however I was thinking
+on how to solve the let my backend serve the endpoint while it allows pulling of data in the background. I believe there are several solutions however
+as I am more familiar with Go at this point, I know I can just use Goroutine to fetch the live transactions while serving the backend.
+
+** Database
+
+Currently there is no database in use while I was building the POC, I am intending to add in a sqlite backend later on. Why I chose sqlite is because
+it is quite highly performant as well as not too heavy (in terms of usage of CPU/memory) as compared to MySQL or PostgreSQL, but that might change
+if there is a need to store more data.
+
+** Libraries
+
+I chose not to use the external libraries/wrappers for the etherscan/binance api because I wanted to learn and understand more about the API and also
+I enjoyed thinking and finding out how to get the prices for the transactions optimally. In the end, I create my own wrapper to use only the api that
+I need.
+
+** General flow
+
+When the backend is started, it will start a goroutine in the background to fetch the live transactions from etherscan while the main service will be
+serving the endpoints while it gets hit. The endpoints consists of fetching transactions that is already stored on the service as well as querying
+all the transactions on the service. Also one can specify the duration to trigger a batch job to get the transactions during that time frame. The
+challenge comes when I wanted to process the
+
+The program can largely be thought of in the following functionality,
+
+*** Background polling of live transactions
+
+Goroutine started at beginning of program to fetch live transaction data from etherscan and compute price using Binance's order book api. These
+are stored and can be fetch via rest api.
+
+*** Web Server
+
+Main routine serving the various api endpoint for getting transaction price as well as starting batch job.
+
+*** Batch job
+
+I wanted to achieve the following results, given a start and end time, I will be able to fetch those transactions and get the closest price for that
+instant. This meant that I wanted to use a finer grain data, hence I decided to go with Binance's kline api. To implement the above, it got a bit
+tricky due to a few factors,
+1. Etherscan's api does not allow me to get transactions by date time (might need more research).
+2. Binance's kline data allows for 1000 max results.
+3. Batch results might exceed kline's data, hence the need to pull more to compute the closest price?
+
+To solve those, these are what I did,
+1. Use another api (get closest block by timestamp) to get the closest start and end block and use that to get the transactions.
+2. Have to pull kline data a few times until my timeframe is met.
+3. Try to get as many kline data to fit into the timeframe to check against the transactions.
+
+For this part, I had to get a little bit creative to try to get the closest price to the transaction based on the time stamp and the closing
+kline data. For this batch job, I was working with 1 minute kline data to be as precise as possible, I do admit I can tone it down to using
+daily price instead which is not as accurate but close enough given ETH price are relatively stable intraday.
+
+*** Thin wrapper for Etherscan and Binance api
+
+Generic code to handle getting of data from the various data source.
+
+* Documents
+
+- Find the swagger document in docs/swagger.yaml.
+- To read more and notes that I have written, refer to docs/notes.org
