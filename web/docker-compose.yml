@@ -5,4 +5,4 @@ services:
     ports:
       - "8000:5050"
     environment:
-      - etherscan_api=ETHERSCAN_KEY
+      - etherscan_api=${ETHERSCAN_KEY}
