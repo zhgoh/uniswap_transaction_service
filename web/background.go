@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func pollTransactions(quit chan bool) {
-	log.Print("Polling live transactions.")
+func pollTransactions(quit chan bool, freq int) {
+	log.Printf("Polling live transactions every %ds", freq)
 
 	etherClient, err := makeEtherscan()
 	if err != nil {
@@ -50,7 +50,7 @@ func pollTransactions(quit chan bool) {
 			}
 
 			// Try fetching again
-			time.Sleep(60 * time.Second)
+			time.Sleep(time.Duration(freq) * time.Second)
 		}
 	}
 }
