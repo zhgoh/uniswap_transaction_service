@@ -3,9 +3,6 @@
 
 FROM golang:1.18.1-alpine3.15
 
-ARG buildtime_variable=default_value  # <- this one's new
-ENV etherscan_api=$buildtime_variable # we reference it directly
-
 WORKDIR /app
 
 COPY go.mod ./

@@ -1,9 +1,114 @@
 #+title: Readme
-* Uniswap transaction prices backend
+* Uniswap transaction prices backend system
 
-* Requirements
-- TODO Use git
-- TODO Write test suite
-- TODO Dockerize
-- TODO Readme
-- TODO Use proper coding style
+This tool is a simpl backend REST api for getting live uniswap prices based on transaction data on etherscan and price data from Binance written
+in Go.
+
+* TODO Requirements
+- [X] Use git
+- [X] Write test suite
+- [X] Dockerize
+- [X] Readme
+- [X] Use proper coding style
+
+* Pre-requisites
+
+The software is written in Go, and requires the following piece of software to run.
+
+** Locally
+
+For deploying locally, currently the only requirements is only go compiler.
+
+- Go     (tested against 1.18.1)
+- Make   (Optional, if using makefile)
+
+** Docker (on Ubuntu 20.04.4 LTS)
+
+For deploying on docker, the system would need docker and docker-compose.
+
+- Docker Compose (tested against 1.29.2)
+- Docker         (tested against 20.10.14, build a224086)
+- Make           (Optional, if using makefile)
+
+* Quick start
+
+** Clone project
+
+#+begin_src bash
+
+# Download project
+$ git clone https://gitlab.com/zhgoh/uniswap_transaction_service
+
+### Run local
+$ cd uniswap_transaction_service
+
+#+end_src
+
+** Setting up env variable
+
+#+begin_src bash
+
+# For running locally, export the env variable (for Unix OS), for Windows, can just add it in path in environment variable editor.
+$ etherscan_api=<your api key>
+$ export etherscan_api
+
+# Creating an .env file with the api key for docker-compose to use
+
+# Create .env file with choice of editor, make sure to add in your own API key after
+# ETHERSCAN_API=123123123MYAPIKEY123123
+$ touch web/.env
+$ nano web/.env
+
+#+end_src
+
+** Running on Local
+
+*** With Make
+
+#+begin_src bash
+
+# See all rule for make
+$ make
+
+# To run the server, run
+$ make run
+
+# To test the server, run
+$ make test
+
+# To build the server without running, run
+$ make build
+
+#+end_src
+
+*** Without Make
+
+#+begin_src bash
+
+$ cd web
+
+# To run the server, run
+$ go run .
+
+# To test the server, run
+$ go test .
+
+# To build the server without running, run
+$ go build .
+
+#+end_src
+
+** Running with Docker
+
+#+begin_src bash
+
+### Run with docker
+$ cd web
+
+# With make
+$ make docker_run
+
+# or just plain old docker-compose
+$ docker-compose up
+
+#+end_src
