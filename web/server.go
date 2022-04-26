@@ -47,6 +47,7 @@ func serve(port string) {
 func homePageHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Endpoints\n")
 	fmt.Fprintf(w, "GET  /transactions\n")
+	fmt.Fprintf(w, "GET  /transactions/all\n")
 	fmt.Fprintf(w, "PUT  /batch\n")
 }
 
