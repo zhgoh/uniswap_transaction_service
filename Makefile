@@ -18,14 +18,13 @@ all:
 	@echo make docker_run
 
 run: build
-	$(CLS)
-	.\web\backend.exe
+	$(CLS) && $(call FixPath, web/backend)
 
 build:
 	cd web && go build .
 
 test:
-	$(CLS) && cd web && go test
+	$(CLS) && cd web && go test -v
 
 tidy:
 	$(CLS) && cd web && go mod tidy
