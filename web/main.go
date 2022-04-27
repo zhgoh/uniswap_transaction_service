@@ -26,6 +26,12 @@ func main() {
 
 	defer db.db.Close()
 
+	// Check if etherscan api key is set
+	if os.Getenv("etherscan_api") == "" {
+		log.Print("Please specify etherscan_api env variable before running.")
+		return
+	}
+
 	freq := 60
 	if len(os.Args) > 1 {
 		val, err := strconv.Atoi(os.Args[1])
@@ -34,6 +40,7 @@ func main() {
 		}
 		freq = val
 	}
+
 	q := make(chan bool)
 	go pollTransactions(q, freq)
 
