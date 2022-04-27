@@ -28,7 +28,8 @@ func main() {
 
 	// Check if etherscan api key is set
 	if os.Getenv("etherscan_api") == "" {
-		log.Print("Please specify etherscan_api env variable before running.")
+		log.Print("Error: Please specify etherscan_api env variable before running.")
+		log.Print("Closing service...")
 		return
 	}
 
