@@ -36,3 +36,5 @@ docker_run:
 .PHONY: clean
 clean:
 	$(RM) $(call FixPath, web/backend*)
+	$(RM) $(call FixPath, web/*.db)
+	$(RM) $(call FixPath, *.db)
