@@ -23,6 +23,14 @@ For deploying on docker, the system would need docker and docker-compose.
 - Docker         (tested against 20.10.14, build a224086)
 - Make           (Optional, if using makefile)
 
+* Features
+
+- Background polling for Uniswap transactions from etherscan and compute prices using Binance's api.
+- Live transaction prices are computed with Binance's order books api.
+- Batch jobs to pull historical transactions with prices computed with Binance's kline api.
+- Support http rest api for starting batch job and getting transaction by hash.
+- Transactions are stored in sqlite database.
+
 * Quick start
 
 ** Clone project
