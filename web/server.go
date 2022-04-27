@@ -132,5 +132,11 @@ func allTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Getting all transactions.")
-	json.NewEncoder(w).Encode(db)
+	res, err := db.getAllTransactions()
+	if err != nil {
+		log.Print("Error: getting all transactions from DB")
+		json.NewEncoder(w).Encode(`{"ErrorCode": 1, "Message": "Error getting all transactions from DB."}`)
+		return
+	}
+	json.NewEncoder(w).Encode(res)
 }
