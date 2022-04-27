@@ -14,33 +14,25 @@ func Test_initDB(t *testing.T) {
 			os.Remove(fileName)
 		}
 
-		createTableStmt := `CREATE TABLE Transactions(
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"hash" TEXT NOT NULL UNIQUE,
-		"fee" REAL NOT NULL
-		);` // SQL Statement for Create Table
-
-		dbClient, err := makeDBClient(fileName, createTableStmt)
+		dbClient, err := makeDBClient(fileName)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer dbClient.db.Close()
 
 		want := 0.4
-		err = dbClient.addTransactions(cryptoTransaction{"0x1", want})
+		err = dbClient.addTransaction(cryptoTransaction{"0x1", want})
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 
-		got, err := dbClient.getTransactions("0x1")
-		if err != nil {
+		got, err := dbClient.getTransaction("0x1")
+		if err != nil || got == nil {
 			t.Fatal(err.Error())
 		}
 
-		if got != want {
-			t.Fatalf("Want: %f, Got: %f", got, want)
-
+		if got.Fee != want {
+			t.Fatalf("Want: %f, Got: %f", got.Fee, want)
 		}
-
 	}
 }

@@ -4,8 +4,20 @@ import "testing"
 
 func Test_addTransactions(t *testing.T) {
 	// Test adding 2 transactions
+	//
+	var err error
+	db, err = makeDBClient("Test.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.db.Close()
+
 	{
-		db = []cryptoTransaction{}
+		err = db.clearTable()
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		transactions := []etherscanTransaction{{
 			BlockNumber: "0x1",
 			GasPrice:    "48335977034",
@@ -21,22 +33,28 @@ func Test_addTransactions(t *testing.T) {
 		}}
 
 		prices := 100.1
-		err := addLiveTransactions(transactions, prices)
+		err := db.addLiveTransactions(transactions, prices)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		got := len(db)
+		got, err := db.getAllTransactions()
+		if err != nil {
+			t.Fatal(err)
+		}
 		want := 2
 
-		if got != want {
-			t.Errorf("Got %d, Want: %d", got, want)
+		if len(got) != want {
+			t.Errorf("Got %d, Want: %d", len(got), want)
 		}
 	}
 
 	// Test adding 3 transactions, with some overlap to see latest hash work or not
 	{
-		db = []cryptoTransaction{}
+		err = db.clearTable()
+		if err != nil {
+			t.Fatal(err)
+		}
 		etherScanTransactions := []etherscanTransaction{
 			{
 				Hash:      "0x48888e465a61d4f9908dab1d18d9ab67d8227d72a44f58ecb00750b719df9b9c",
@@ -59,7 +77,7 @@ func Test_addTransactions(t *testing.T) {
 		}
 		var prices float64 = 2948.71
 
-		if err := addLiveTransactions(etherScanTransactions, prices); err != nil {
+		if err := db.addLiveTransactions(etherScanTransactions, prices); err != nil {
 			t.Fatal("Error adding transactions")
 		}
 
@@ -84,21 +102,35 @@ func Test_addTransactions(t *testing.T) {
 			},
 		}
 
-		if err := addLiveTransactions(etherScanTransactions, prices); err != nil {
+		if err := db.addLiveTransactions(etherScanTransactions, prices); err != nil {
 			t.Fatal("Error adding transactions.")
 		}
 
+		got, err := db.getAllTransactions()
+		if err != nil {
+			t.Fatal(err)
+		}
 		want := 5
-		if len(db) != want {
-			t.Errorf("Want: %d, Got: %d", want, len(db))
+
+		if len(got) != want {
+			t.Errorf("Got %d, Want: %d", len(got), want)
 		}
 	}
 }
 
 func Test_addSingleTransaction(t *testing.T) {
-	db = []cryptoTransaction{}
+	var err error
+	db, err = makeDBClient("Test.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.db.Close()
 
 	{
+		err = db.clearTable()
+		if err != nil {
+			t.Fatal(err)
+		}
 		transaction := etherscanTransaction{
 			BlockNumber: "0x1",
 			GasPrice:    "44901991519",
@@ -107,16 +139,19 @@ func Test_addSingleTransaction(t *testing.T) {
 			Hash:        "0x4123",
 		}
 		prices := 1000.0
-		err := addSingleTransaction(transaction, prices)
+		err := db.addSingleTransaction(transaction, prices)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		got := len(db)
+		got, err := db.getAllTransactions()
+		if err != nil {
+			t.Fatal(err)
+		}
 		want := 1
 
-		if got != want {
-			t.Errorf("Got %d, Want: %d", got, want)
+		if len(got) != want {
+			t.Errorf("Got %d, Want: %d", len(got), want)
 		}
 	}
 
@@ -130,16 +165,19 @@ func Test_addSingleTransaction(t *testing.T) {
 			Hash:        "0x4123",
 		}
 		prices := 1000.0
-		err := addSingleTransaction(transaction, prices)
+		err := db.addSingleTransaction(transaction, prices)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		got := len(db)
+		got, err := db.getAllTransactions()
+		if err != nil {
+			t.Fatal(err)
+		}
 		want := 1
 
-		if got != want {
-			t.Errorf("Got %d, Want: %d", got, want)
+		if len(got) != want {
+			t.Errorf("Got %d, Want: %d", len(got), want)
 		}
 	}
 }

@@ -106,7 +106,7 @@ func batch(startTime, endTime time.Time) error {
 			price := binarySearchKline(klineData, time.Unix(timeStamp, 0))
 			// log.Printf("Price: %f", price)
 
-			err = addSingleTransaction(v, price)
+			err = db.addSingleTransaction(v, price)
 			if err != nil {
 				return err
 			}

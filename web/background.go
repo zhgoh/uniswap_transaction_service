@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"strconv"
 	"time"
 )
 
@@ -43,7 +41,7 @@ func pollTransactions(quit chan bool, freq int) {
 				continue
 			}
 
-			if err := addLiveTransactions(etherTransactions, prices); err != nil {
+			if err := db.addLiveTransactions(etherTransactions, prices); err != nil {
 				log.Print("Error: getting transactions, will try again later")
 				log.Print(err)
 				continue
@@ -53,69 +51,4 @@ func pollTransactions(quit chan bool, freq int) {
 			time.Sleep(time.Duration(freq) * time.Second)
 		}
 	}
-}
-
-func addLiveTransactions(etherTransactions []etherscanTransaction, prices float64) error {
-	if len(etherTransactions) == 0 {
-		return fmt.Errorf("no transactions provided")
-	}
-
-	for _, v := range etherTransactions {
-		if len(v.Hash) == 0 {
-			return fmt.Errorf("hash is empty.")
-		}
-
-		if v.Hash == latestHash {
-			break
-		}
-
-		err := addSingleTransaction(v, prices)
-		if err != nil {
-			return err
-		}
-
-	}
-	latestHash = etherTransactions[0].Hash
-	return nil
-}
-
-func addSingleTransaction(transaction etherscanTransaction, prices float64) error {
-	for _, v := range db {
-		if v.Hash == transaction.Hash {
-			// Ignore duplicates
-			return nil
-		}
-	}
-
-	// Compute prices
-	gasPrice, err := strconv.Atoi(transaction.GasPrice)
-	if err != nil {
-		log.Print("Error: failed to convert gas price to integer.")
-		return err
-	}
-
-	gasUsed, err := strconv.Atoi(transaction.GasUsed)
-	if err != nil {
-		log.Print("Error: failed to convert gas used to integer.")
-		return err
-	}
-
-	// Fees in eth
-	// Note: no idea if division or multiplying would be faster here, probably same
-	// fees := float64(gasPrice*gasUsed) / 1000000000000000000
-	fees := float64(gasPrice*gasUsed) * 0.000000000000000001
-	fees *= prices
-
-	// Convert to price in USDT
-	db = append(db, cryptoTransaction{transaction.Hash, fees})
-
-	timeStamp, err := strconv.Atoi(transaction.TimeStamp)
-	if err != nil {
-		log.Print("Error: failed to convert timeStamp.")
-		return err
-	}
-
-	// TODO: Add to DB
-	log.Printf("Hash: %s, Time: %d, Fees: $%.2f", transaction.Hash, timeStamp, fees)
-	return nil
 }

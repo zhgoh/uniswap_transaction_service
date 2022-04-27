@@ -50,7 +50,17 @@ func Test_binarySearch(t *testing.T) {
 }
 
 func Test_batch(t *testing.T) {
-	db = []cryptoTransaction{}
+	var err error
+	db, err = makeDBClient("Test.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.db.Close()
+
+	err = db.clearTable()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	start, err := time.Parse(time.RFC3339, "2022-01-04T00:50:10.770Z")
 	if err != nil {

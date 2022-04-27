@@ -113,12 +113,12 @@ func transactionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the transaction
-	for _, transaction := range db {
-		if transaction.Hash == hashes[0] {
+	res, err := db.getTransaction(hashes[0])
+	if err == nil {
+		if res != nil {
 			transactionResp.Message = "Found transactions."
 			transactionResp.ErrorCode = 0
-			transactionResp.Transactions = transaction
-			break
+			transactionResp.Transactions = *res
 		}
 	}
 	json.NewEncoder(w).Encode(transactionResp)

@@ -12,28 +12,19 @@ type cryptoTransaction struct {
 	Fee  float64 `json:"fee"`
 }
 
-var client *DBClient
-
-// TODO: Store Transactions in DB, and remove global variables
-var db []cryptoTransaction
+var db *dbClient
 var latestHash string
 
 // main is just the entry point of our backend service, we will run a goroutine that is polling
 // live transactions in the background.
 func main() {
-	createTableStmt := `CREATE TABLE Transactions(
-	"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-	"hash" TEXT NOT NULL UNIQUE,
-	"fee" REAL NOT NULL
-    );` // SQL Statement for Create Table
-
 	var err error
-	client, err = makeDBClient("transactions.db", createTableStmt)
+	db, err = makeDBClient("transactions.db")
 	if err != nil {
 		log.Panic(err.Error())
 	}
 
-	defer client.db.Close()
+	defer db.db.Close()
 
 	freq := 60
 	if len(os.Args) > 1 {
@@ -45,8 +36,6 @@ func main() {
 	}
 	q := make(chan bool)
 	go pollTransactions(q, freq)
-
-	db = []cryptoTransaction{}
 
 	// Serve
 	serve("5050")

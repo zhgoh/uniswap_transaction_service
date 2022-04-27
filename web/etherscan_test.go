@@ -6,7 +6,6 @@ import (
 )
 
 func Test_FetchTransaction(t *testing.T) {
-	db = []cryptoTransaction{}
 	client, err := makeEtherscan()
 	if err != nil {
 		t.Fatal(err)
