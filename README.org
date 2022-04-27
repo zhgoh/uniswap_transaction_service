@@ -198,3 +198,4 @@ Generic code to handle getting of data from the various data source.
 
 - Find the swagger document in docs/swagger.yaml.
 - To read more and notes that I have written, refer to docs/notes.org
+- Added insomnia.json which has the environment used for testing this POC
