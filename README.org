@@ -39,15 +39,12 @@ $ cd uniswap_transaction_service
 
 #+begin_src bash
 # For running locally, export the env variable (for Unix OS), for Windows, can just add it in path in environment variable editor.
-$ etherscan_api=<your api key>
-$ export etherscan_api
+$ export etherscan_api=<your api key>
 
-# Creating an .env file with the api key for docker-compose to use
-
-# Create .env file with choice of editor, make sure to add in your own API key after
+# For running in docker, create .env file for docker-compose to use
+# Example .env file
 # ETHERSCAN_API=123123123MYAPIKEY123123
-$ touch web/.env
-$ nano web/.env
+$ nano web/.env # Key in api key and save
 #+end_src
 
 ** Running on Local
