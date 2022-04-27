@@ -1,4 +1,15 @@
-# This makefile is only tested in Windows 10
+ifdef OS
+	RM = del /Q
+	FixPath = $(subst /,\,$1)
+	CLS = cls
+else
+   ifeq ($(shell uname), Linux)
+		RM = rm -f
+		FixPath = $1
+		CLS = clear
+   endif
+endif
+
 all:
 	@echo make usage:
 	@echo make run
@@ -7,17 +18,21 @@ all:
 	@echo make docker_run
 
 run: build
-	clear
+	$(CLS)
 	.\web\backend.exe
 
 build:
 	cd web && go build .
 
 test:
-	clear && cd web && go test
+	$(CLS) && cd web && go test
 
 tidy:
-	clear && cd web && go mod tidy
+	$(CLS) && cd web && go mod tidy
 
 docker_run:
-	clear && cd web && docker-compose up --build
+	$(CLS) && cd web && docker-compose up --build
+
+.PHONY: clean
+clean:
+	$(RM) $(call FixPath, web/backend*)
