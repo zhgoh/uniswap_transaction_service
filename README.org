@@ -146,9 +146,13 @@ if there is a need to store more data.
 
 ** Libraries
 
-I chose not to use the external libraries/wrappers for the etherscan/binance api because I wanted to learn and understand more about the API and also
-I enjoyed thinking and finding out how to get the prices for the transactions optimally. In the end, I create my own wrapper to use only the api that
-I need.
+I chose to use minimal libraries for this POC. The external libraries that I am using is the sqlite driver which does not require cgo. Naturally, I
+should have gone with the cgo implementation because it is faster (as it uses the c bindings) instead of the pure go version. However for testing and
+poc purpose, I have decided to use the pure go version instead. As I am using the interface provided by go, it would relatively easy to switch out
+the driver implementation easily.
+
+As for etherscan/binance api, I have decided to write my own wrapper for the etherscan/binance api because I wanted to learn and understand more
+about the API and I also enjoyed thinking and finding out how to get the prices for the transactions optimally. In the end, I create my own wrapper to use only the api that I need.
 
 ** General flow
 
