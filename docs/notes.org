@@ -120,6 +120,13 @@ let-env FOO = 'BAR'
 
 #+end_src
 
+Bash:
+#+begin_src bash
+
+export etherscan_api=123123
+
+#+end_src
+
 * Docker
 
 Notes when setting up docker stuff, as I don't always remember these.
@@ -127,3 +134,15 @@ Notes when setting up docker stuff, as I don't always remember these.
 https://vsupalov.com/docker-build-time-env-values/
 https://docs.docker.com/language/golang/build-images/
 https://pythonspeed.com/articles/docker-connection-refused/
+
+* Decoding swap price (Bonus item)
+
+I have been researching for this for a while, but I still am quite clueless as to how to decipher the data. For one I think that it has got to do with the block's input data
+which can be decoded to mean the functions called and values specified. I suspect that might give me a clue. I see that etherscan does provide the swap info. I think a simpler
+way could be to just scrape etherscan page but might not be as fast and real time that using something like infura and interfacing with the eth network.
+
+Some resources that I have found to be useful
+- https://www.trustology.io/insights-events/decoding-an-ethereum-transaction-its-no-secret-its-just-smart
+- https://github.com/G-Tarik/MyTools/blob/master/Ethereum_Parse_RawTX.go
+- https://archive.ph/1j5eL
+- https://medium.com/coinmonks/discovering-the-secrets-of-an-ethereum-transaction-64febb00935c
