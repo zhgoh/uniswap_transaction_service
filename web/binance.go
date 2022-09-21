@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -114,7 +114,7 @@ func (client *binanceClient) getKlines(symbol string, freq int, interval chartIn
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func (client *binanceClient) getOrderBook(symbol string, limit int) (float64, er
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0.0, err
 	}
@@ -175,7 +175,7 @@ func (client *binanceClient) getSymbolPrice(symbol string) (float64, error) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0.0, err
 	}

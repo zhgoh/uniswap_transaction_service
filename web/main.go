@@ -2,14 +2,17 @@ package main
 
 import (
 	"log"
+	"math/big"
 	"os"
 	"strconv"
 )
 
 // cryptoTransaction is a data type that is used to store the current transactions info after processing.
 type cryptoTransaction struct {
-	Hash string  `json:"hash"`
-	Fee  float64 `json:"fee"`
+	Hash string     `json:"hash"`
+	USDC *big.Float `json:"usdc"`
+	ETH  *big.Float `json:"eth"`
+	Fee  float64    `json:"fee"`
 }
 
 var db *dbClient

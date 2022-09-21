@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/big"
 	"os"
 	"testing"
 )
@@ -35,7 +36,7 @@ func Test_addTransactionToDB(t *testing.T) {
 
 	{
 		want := 0.4
-		err = db.addTransaction(cryptoTransaction{"0x1", want})
+		err = db.addTransaction(cryptoTransaction{"0x1", big.NewFloat(0), big.NewFloat(0), want})
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -51,8 +52,7 @@ func Test_addTransactionToDB(t *testing.T) {
 	}
 
 	{
-		want := 2
-		err := db.addTransaction(cryptoTransaction{"0x2", 0.5})
+		err := db.addTransaction(cryptoTransaction{"0x2", big.NewFloat(0), big.NewFloat(0), 0.5})
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -62,6 +62,7 @@ func Test_addTransactionToDB(t *testing.T) {
 			t.Fatal(err.Error())
 		}
 
+		want := 2
 		if len(got) != want {
 			t.Fatalf("Want: %d, Got: %d", len(got), want)
 		}

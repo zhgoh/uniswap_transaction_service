@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/big"
 	"os"
 	"strconv"
 
@@ -33,10 +34,12 @@ func makeDBClient(fileName string) (*dbClient, error) {
 		}
 		file.Close()
 
-		// log.Print("Creating DB")
+		log.Print("Creating DB")
 		createTableStmt := `CREATE TABLE Transactions(
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"hash" TEXT NOT NULL UNIQUE,
+		"hash" TEXT NOT NULL,
+		"usdc" REAL NOT NULL,
+		"eth" REAL NOT NULL,
 		"fee" REAL NOT NULL
 		);` // SQL Statement for Create Table
 
@@ -66,8 +69,10 @@ func (client *dbClient) execStatement(stmt string) (sql.Result, error) {
 
 func (client *dbClient) addTransaction(transaction cryptoTransaction) error {
 	statement := fmt.Sprintf(
-		"INSERT INTO Transactions (hash, fee) VALUES (\"%s\", %f);",
+		"INSERT INTO Transactions (hash, fee, usdc, eth) VALUES (\"%s\", \"%f\", \"%f\", \"%f\");",
 		transaction.Hash,
+		transaction.USDC,
+		transaction.ETH,
 		transaction.Fee)
 
 	_, err := client.execStatement(statement)
@@ -75,13 +80,13 @@ func (client *dbClient) addTransaction(transaction cryptoTransaction) error {
 }
 
 func (client *dbClient) clearTable() error {
-	statement := fmt.Sprint("Delete FROM Transactions")
+	statement := "Delete FROM Transactions"
 	_, err := client.execStatement(statement)
 	return err
 }
 
 func (client *dbClient) getTransaction(hash string) (*cryptoTransaction, error) {
-	query := fmt.Sprintf("SELECT fee from Transactions where hash=\"%s\";", hash)
+	query := fmt.Sprintf("SELECT * from Transactions where hash=\"%s\";", hash)
 	row, err := client.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -90,20 +95,23 @@ func (client *dbClient) getTransaction(hash string) (*cryptoTransaction, error) 
 	defer row.Close()
 
 	var fee float64
+	var usdc *big.Float
+	var eth *big.Float
+
 	var res *cryptoTransaction
 	for row.Next() {
-		if err = row.Scan(&fee); err != nil {
+		if err = row.Scan(&hash, &usdc, &eth, &fee); err != nil {
 			log.Print("Error: getting row info")
 			continue
 		}
-		res = &cryptoTransaction{hash, fee}
+		res = &cryptoTransaction{hash, usdc, eth, fee}
 	}
 	return res, nil
 }
 
 func (client *dbClient) getAllTransactions() ([]cryptoTransaction, error) {
 	res := []cryptoTransaction{}
-	query := fmt.Sprintf("SELECT hash, fee FROM Transactions;")
+	query := "SELECT * FROM Transactions;"
 	row, err := client.db.Query(query)
 	if err != nil {
 		return res, err
@@ -113,12 +121,15 @@ func (client *dbClient) getAllTransactions() ([]cryptoTransaction, error) {
 
 	var fee float64
 	var hash string
+	var usdc *big.Float
+	var eth *big.Float
+
 	for row.Next() {
-		if err = row.Scan(&hash, &fee); err != nil {
+		if err = row.Scan(&hash, &usdc, &eth, &fee); err != nil {
 			log.Print("Error: getting row info")
 			continue
 		}
-		res = append(res, cryptoTransaction{hash, fee})
+		res = append(res, cryptoTransaction{hash, usdc, eth, fee})
 	}
 	return res, nil
 }
@@ -130,7 +141,7 @@ func (client *dbClient) addLiveTransactions(etherTransactions []etherscanTransac
 
 	for _, v := range etherTransactions {
 		if len(v.Hash) == 0 {
-			return fmt.Errorf("hash is empty.")
+			return fmt.Errorf("hash is empty")
 		}
 
 		if v.Hash == latestHash {
@@ -177,7 +188,16 @@ func (client *dbClient) addSingleTransaction(transaction etherscanTransaction, p
 	fees *= prices
 
 	// Convert to price in USDT
-	db.addTransaction(cryptoTransaction{transaction.Hash, fees})
+
+	swapAmounts, err := decodeTransaction(transaction.Hash)
+	if err != nil {
+		log.Print("Error: failed to decode transaction.")
+		return err
+	}
+
+	for _, value := range swapAmounts {
+		db.addTransaction(cryptoTransaction{transaction.Hash, value.usdc, value.eth, fees})
+	}
 
 	timeStamp, err := strconv.Atoi(transaction.TimeStamp)
 	if err != nil {

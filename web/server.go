@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -37,6 +37,7 @@ func serve(port string) {
 	http.HandleFunc("/transactions/all", allTransactionHandler)
 
 	// TODO: Bonus API: Decode actual Uniswap swap price
+	http.HandleFunc("/swaps", swapHandler)
 
 	// Listen to port
 	log.Printf("Running server at port at %s.\n", port)
@@ -64,7 +65,7 @@ func batchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("Batch job request")
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Print("Error: Cannot read batch request.")
 		batchResp.ErrorCode = 1
@@ -139,4 +140,36 @@ func allTransactionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(res)
+}
+
+func swapHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(404)
+		log.Print("Only GET method supported on swaps endpoint.")
+		return
+	}
+
+	log.Print("Getting swaps.")
+	transactionResp := transactionResponse{
+		Message:   "No transactions hash found",
+		ErrorCode: 1,
+	}
+
+	hashes, ok := r.URL.Query()["hash"]
+	if !ok || len(hashes[0]) < 1 {
+		log.Print("Error: url param hash is missing.")
+		json.NewEncoder(w).Encode(transactionResp)
+		return
+	}
+
+	// Get the transaction
+	res, err := db.getTransaction(hashes[0])
+	if err == nil {
+		if res != nil {
+			transactionResp.Message = "Found transactions."
+			transactionResp.ErrorCode = 0
+			transactionResp.Transactions = *res
+		}
+	}
+	json.NewEncoder(w).Encode(transactionResp)
 }

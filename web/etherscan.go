@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +19,7 @@ func makeEtherscan() (*etherscanClient, error) {
 	apiKey := os.Getenv("etherscan_api")
 	if len(apiKey) == 0 {
 		log.Print("Error: API key etherscan_api not found in env variables.")
-		return nil, fmt.Errorf("Error: API key etherscan_api not found in env variables.")
+		return nil, fmt.Errorf("error: API key etherscan_api not found in env variables")
 	}
 	return &etherscanClient{apiKey: apiKey}, nil
 }
@@ -83,7 +83,7 @@ func (client *etherscanClient) fetchTransactions(startBlock, endBlock int) ([]et
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Print("Error: could not read body of fetched transactions.")
 		return nil, err
@@ -152,7 +152,7 @@ func (client *etherscanClient) getBlockNumberByTimestamp(closest closestBlock, t
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Print("Error: could not read body of fetched block response.")
 		return 0, err
