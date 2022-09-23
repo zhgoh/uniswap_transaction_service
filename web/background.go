@@ -28,22 +28,22 @@ func pollTransactions(quit chan bool, freq int) {
 			// Will fetch latest price from order books and used it to store in latest transactions
 			prices, err := binanceClient.getOrderBook("ETHUSDT", 1)
 			if err != nil {
-				log.Print("Error: getting prices, will try again later")
-				log.Print(err)
+				log.Print("Error: getting prices, will try again later in 5s ", err.Error())
+				time.Sleep(5 * time.Second)
 				continue
 			}
 
 			etherTransactions, err := etherClient.fetchTransactions(0, 0)
 			if err != nil {
 				// Log error and try again later
-				log.Print("Error: Failed to fetch etherscan transaction")
-				log.Print(err)
+				log.Print("Error: Failed to fetch etherscan transaction, trying again in 5s ", err.Error())
+				time.Sleep(5 * time.Second)
 				continue
 			}
 
 			if err := db.addLiveTransactions(etherTransactions, prices); err != nil {
-				log.Print("Error: getting transactions, will try again later")
-				log.Print(err)
+				log.Print("Error: getting transactions, will try again later in 5s ", err.Error())
+				time.Sleep(5 * time.Second)
 				continue
 			}
 

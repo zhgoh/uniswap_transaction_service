@@ -100,15 +100,15 @@ output:
 
 GET /transactions
 input:
-hash: string (query)
+txid: string (query)
 output:
 {
     "errorcode": 1,
     "transactions": {
-        "hash": "",
+        "txid": "",
         "fee": ""
     },
-    "message": "No transactions hash found"
+    "message": "No transactions id found"
 }
 
 * Environment variables

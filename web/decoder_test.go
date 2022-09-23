@@ -27,7 +27,7 @@ func Test_decodetransaction(t *testing.T) {
 	}
 
 	// get block
-	txHash := common.HexToHash("0xdbca11ddbb8b7a2fb5dd5883b526e9b57836882f3317011adb858464a315c38c")
+	txHash := common.HexToHash("0x87339c2c394f132069213466e671aba46e3f9d22287ea8d16cf80d1884855321")
 
 	receipts, err := client.TransactionReceipt(context.Background(), txHash)
 	if err != nil {
@@ -67,9 +67,16 @@ func Test_decodetransaction(t *testing.T) {
 	for _, vLog := range logs {
 		err := contractAbi.UnpackIntoInterface(&swapEvent, "Swap", vLog.Data)
 		if err != nil {
-			log.Fatal(err)
+			// log.Fatal(err)
+			log.Print("Skipping")
+			continue
 		}
 
 		log.Print(swapEvent)
+
+		amount0 := big.NewFloat(0).SetInt(swapEvent.Amount0)
+		amount1 := big.NewFloat(0).SetInt(swapEvent.Amount1)
+
+		log.Print(amount0, amount1)
 	}
 }

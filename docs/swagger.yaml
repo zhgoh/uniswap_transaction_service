@@ -24,7 +24,7 @@ paths:
     get:
       tags:
       - "transaction"
-      summary: "Get transaction info given a hash"
+      summary: "Get transaction info given a transaction id"
       description: ""
       operationId: "getTransaction"
       consumes:
@@ -32,14 +32,14 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "hash"
+      - name: "txid"
         in: "query"
-        description: "Transaction hash"
+        description: "Transaction id"
         required: true
         type: "string"
       responses:
         "200":
-          description: "Transaction hash"
+          description: "Transaction id"
           schema:
             $ref: "#/definitions/Transaction"
         "405":
@@ -57,7 +57,7 @@ paths:
       parameters:
       - in: "body"
         name: "body"
-        description: "Transaction hash"
+        description: "Transaction id"
         required: true
         schema:
           $ref: "#/definitions/BatchRequest"
@@ -78,7 +78,7 @@ definitions:
       transactions:
         type: "object"
         properties:
-          hash:
+          txid:
               type: "string"
               description: "Hash value of transaction"
           fee:

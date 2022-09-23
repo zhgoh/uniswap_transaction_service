@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -28,16 +29,24 @@ func decodeTransaction(transaction_id string) ([]swapAmounts, error) {
 
 	client, err := ethclient.Dial(infura_node)
 	if err != nil {
+		log.Print("Failed to connect to infura.")
 		return nil, err
 	}
 
-	txHash := common.HexToHash(transaction_id)
-	receipts, err := client.TransactionReceipt(context.Background(), txHash)
+	contractAbi, err := abi.JSON(strings.NewReader(string(uniswap.UniswapMetaData.ABI)))
 	if err != nil {
+		log.Print("Unable to create ABI ", err.Error())
 		return nil, err
 	}
 
 	ctx := context.Background()
+
+	txHash := common.HexToHash(transaction_id)
+	receipts, err := client.TransactionReceipt(ctx, txHash)
+	if err != nil {
+		log.Print("Error: failed to process transaction receipt.")
+		return nil, err
+	}
 
 	contractAddress := common.HexToAddress("0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640")
 	query := ethereum.FilterQuery{
@@ -50,11 +59,7 @@ func decodeTransaction(transaction_id string) ([]swapAmounts, error) {
 
 	logs, err := client.FilterLogs(ctx, query)
 	if err != nil {
-		return nil, err
-	}
-
-	contractAbi, err := abi.JSON(strings.NewReader(string(uniswap.UniswapABI)))
-	if err != nil {
+		log.Print("Unable to filter Logs ", err.Error())
 		return nil, err
 	}
 
@@ -64,12 +69,11 @@ func decodeTransaction(transaction_id string) ([]swapAmounts, error) {
 	for _, vLog := range logs {
 		err := contractAbi.UnpackIntoInterface(&swapEvent, "Swap", vLog.Data)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		amount0 := big.NewFloat(0).SetInt(swapEvent.Amount0)
 		amount1 := big.NewFloat(0).SetInt(swapEvent.Amount1)
 		results = append(results, swapAmounts{amount0, amount1})
-
 	}
 	return results, nil
 }

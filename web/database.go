@@ -37,7 +37,7 @@ func makeDBClient(fileName string) (*dbClient, error) {
 		log.Print("Creating DB")
 		createTableStmt := `CREATE TABLE Transactions(
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"hash" TEXT NOT NULL,
+		"transaction_id" TEXT NOT NULL,
 		"usdc" REAL NOT NULL,
 		"eth" REAL NOT NULL,
 		"fee" REAL NOT NULL
@@ -69,7 +69,7 @@ func (client *dbClient) execStatement(stmt string) (sql.Result, error) {
 
 func (client *dbClient) addTransaction(transaction cryptoTransaction) error {
 	statement := fmt.Sprintf(
-		"INSERT INTO Transactions (hash, fee, usdc, eth) VALUES (\"%s\", \"%f\", \"%f\", \"%f\");",
+		"INSERT INTO Transactions (transaction_id, usdc, eth, fee) VALUES (\"%s\", \"%f\", \"%f\", \"%f\");",
 		transaction.Hash,
 		transaction.USDC,
 		transaction.ETH,
@@ -86,25 +86,26 @@ func (client *dbClient) clearTable() error {
 }
 
 func (client *dbClient) getTransaction(hash string) (*cryptoTransaction, error) {
-	query := fmt.Sprintf("SELECT * from Transactions where hash=\"%s\";", hash)
+	query := fmt.Sprintf("SELECT transaction_id, usdc, eth, fee from Transactions where transaction_id=\"%s\";", hash)
 	row, err := client.db.Query(query)
 	if err != nil {
+		log.Print("Error: querying DB.")
 		return nil, err
 	}
 
 	defer row.Close()
 
 	var fee float64
-	var usdc *big.Float
-	var eth *big.Float
+	var usdc float64
+	var eth float64
 
 	var res *cryptoTransaction
 	for row.Next() {
 		if err = row.Scan(&hash, &usdc, &eth, &fee); err != nil {
-			log.Print("Error: getting row info")
+			log.Print("Error: getting row info ", err.Error())
 			continue
 		}
-		res = &cryptoTransaction{hash, usdc, eth, fee}
+		res = &cryptoTransaction{hash, big.NewFloat(usdc), big.NewFloat(eth), fee}
 	}
 	return res, nil
 }
@@ -150,6 +151,7 @@ func (client *dbClient) addLiveTransactions(etherTransactions []etherscanTransac
 
 		err := client.addSingleTransaction(v, prices)
 		if err != nil {
+			log.Print("Failed to add single transaction ", err.Error())
 			return err
 		}
 
@@ -161,6 +163,7 @@ func (client *dbClient) addLiveTransactions(etherTransactions []etherscanTransac
 func (client *dbClient) addSingleTransaction(transaction etherscanTransaction, prices float64) error {
 	res, err := db.getTransaction(transaction.Hash)
 	if err != nil {
+		log.Print("Failed to get transaction ", err.Error())
 		return err
 	}
 
@@ -191,7 +194,7 @@ func (client *dbClient) addSingleTransaction(transaction etherscanTransaction, p
 
 	swapAmounts, err := decodeTransaction(transaction.Hash)
 	if err != nil {
-		log.Print("Error: failed to decode transaction.")
+		log.Print("Error: failed to decode transaction ", err.Error())
 		return err
 	}
 
@@ -205,7 +208,6 @@ func (client *dbClient) addSingleTransaction(transaction etherscanTransaction, p
 		return err
 	}
 
-	// TODO: Add to DB
-	log.Printf("Hash: %s, Time: %d, Fees: $%.2f", transaction.Hash, timeStamp, fees)
+	log.Printf("Added Hash: %s, Time: %d, Fees: $%.2f", transaction.Hash, timeStamp, fees)
 	return nil
 }

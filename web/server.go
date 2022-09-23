@@ -32,12 +32,9 @@ func serve(port string) {
 	// TODO: API: batch job
 	http.HandleFunc("/batch", batchHandler)
 
-	// TODO: API: Get transaction fee given transaction hash
+	// TODO: API: Get transaction fee and (swap details) given transaction hash
 	http.HandleFunc("/transactions", transactionHandler)
 	http.HandleFunc("/transactions/all", allTransactionHandler)
-
-	// TODO: Bonus API: Decode actual Uniswap swap price
-	http.HandleFunc("/swaps", swapHandler)
 
 	// Listen to port
 	log.Printf("Running server at port at %s.\n", port)
@@ -47,7 +44,7 @@ func serve(port string) {
 
 func homePageHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Endpoints\n")
-	fmt.Fprintf(w, "GET  /transactions\n")
+	fmt.Fprintf(w, "GET  /transactions?id=\n")
 	fmt.Fprintf(w, "GET  /transactions/all\n")
 	fmt.Fprintf(w, "PUT  /batch\n")
 }
@@ -106,21 +103,24 @@ func transactionHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorCode: 1,
 	}
 
-	hashes, ok := r.URL.Query()["hash"]
+	hashes, ok := r.URL.Query()["id"]
 	if !ok || len(hashes[0]) < 1 {
-		log.Print("Error: url param hash is missing.")
+		log.Print("Error: url param id is missing.")
 		json.NewEncoder(w).Encode(transactionResp)
 		return
 	}
 
 	// Get the transaction
 	res, err := db.getTransaction(hashes[0])
-	if err == nil {
-		if res != nil {
-			transactionResp.Message = "Found transactions."
-			transactionResp.ErrorCode = 0
-			transactionResp.Transactions = *res
-		}
+	if err != nil {
+		log.Print("Error getting transaction: ", err.Error())
+		return
+	}
+
+	if res != nil {
+		transactionResp.Message = "Found transactions."
+		transactionResp.ErrorCode = 0
+		transactionResp.Transactions = *res
 	}
 	json.NewEncoder(w).Encode(transactionResp)
 }
@@ -140,36 +140,4 @@ func allTransactionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(res)
-}
-
-func swapHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(404)
-		log.Print("Only GET method supported on swaps endpoint.")
-		return
-	}
-
-	log.Print("Getting swaps.")
-	transactionResp := transactionResponse{
-		Message:   "No transactions hash found",
-		ErrorCode: 1,
-	}
-
-	hashes, ok := r.URL.Query()["hash"]
-	if !ok || len(hashes[0]) < 1 {
-		log.Print("Error: url param hash is missing.")
-		json.NewEncoder(w).Encode(transactionResp)
-		return
-	}
-
-	// Get the transaction
-	res, err := db.getTransaction(hashes[0])
-	if err == nil {
-		if res != nil {
-			transactionResp.Message = "Found transactions."
-			transactionResp.ErrorCode = 0
-			transactionResp.Transactions = *res
-		}
-	}
-	json.NewEncoder(w).Encode(transactionResp)
 }
